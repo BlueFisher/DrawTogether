@@ -1,0 +1,45 @@
+.window-container {
+	padding-top: 15px;
+	border: 1px solid #CDCDCD;
+	border-radius: 4px;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+	background-color: #F9F9F9
+}
+.window {
+	margin-bottom: 5px;
+	width: 100%;
+	padding: 10px;
+	height: 500px;
+	overflow-y: auto;
+	border: 1px solid #DDDDDD;
+	border-radius: 4px;
+	background-color: #FDFDFD
+}
+.msg-info{
+	margin-bottom: 10px;
+	color: #ccc;
+	text-align: center;
+}
+.msg-sender,
+.msg-receiver {
+	margin-bottom: 10px;
+	padding: 10px;
+	border: 1px solid #cccccc;
+	border-radius: 4px;
+	box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
+.msg-sender{
+	background-color: #d9edf7;
+}
+
+.msg-sender small,
+.msg-receiver small{
+	color: #aaa;
+}
+.avatar{
+	margin-bottom: 5px;
+}
+.avatar img {
+	border-radius: 4px;
+	margin-right: 5px;
+}

@@ -1,0 +1,93 @@
+﻿@{
+	Layout = null;
+}
+
+<!doctype html>
+<html lang="zh-cn">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta charset="UTF-8">
+	<title>WebSocket在线聊天</title>
+	<script type="text/javascript" src="~/Content/js/jquery-2.1.1.min.js"></script>
+	<script type="text/javascript" src="~/Content/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="~/Content/js/signin.js"></script>
+	<script type="text/javascript" src="~/Content/js/jquery.alert.js"></script>
+	<link rel="stylesheet" href="~/Content/css/bootstrap.min.css">
+	<link rel="stylesheet" href="~/Content/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" href="~/Content/css/font-awesome.min.css">
+	<link rel="stylesheet" href="~/Content/css/global.css">
+	<link rel="stylesheet" href="~/Content/css/signin.css">
+</head>
+<body>
+	<div class="container-fluid">
+		<div class="form-signin center-block" id="signin">
+			<div class="form-signin-header">
+				<h2>登录</h2>
+			</div>
+			<div class="form-signin-content">
+				<form>
+					<div class="form-group">
+						<div class="input-group">
+							<div class="input-group-addon"><span class="fa fa-envelope fa-fw"></span></div>
+							<input class="form-control" id="signinEmail" name="email" type="email" placeholder="输入邮箱">
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="input-group">
+							<div class="input-group-addon"><span class="fa fa-key fa-fw"></span></div>
+							<input class="form-control" id="signinPw" name="password" type="password" placeholder="输入密码">
+						</div>
+					</div>
+					<div class="checkbox">
+						<label>
+							<input type="checkbox">记住我
+						</label>
+					</div>	
+				</form>
+			</div>
+			<div class="form-signin-footer">
+				<button class="btn btn-primary btn-lg btn-block" id="btn-signin">登录</button>
+				<button class="btn btn-default btn-block btn-toggle">注册</button>
+			</div>
+		</div>
+
+		<div class="form-signin center-block invisible" id="signup">
+			<div class="form-signin-header">
+				<h2>注册</h2>
+			</div>
+			<div class="form-signin-content">
+				<form>
+					<div class="form-group">
+						<div class="input-group">
+							<div class="input-group-addon"><span class="fa fa-user fa-fw"></span></div>
+							<input class="form-control" id="signupNickName" name="username" type="text" placeholder="输入昵称">
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="input-group">
+							<div class="input-group-addon"><span class="fa fa-envelope fa-fw"></span></div>
+							<input class="form-control" id="signupEmail" name="email" type="email" placeholder="输入邮箱">
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="input-group">
+							<div class="input-group-addon"><span class="fa fa-key fa-fw"></span></div>
+							<input class="form-control" id="signupPw" name="password" type="password" placeholder="输入密码">
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="input-group">
+							<div class="input-group-addon"><span class="fa fa-key fa-fw"></span></div>
+							<input class="form-control" id="signupPwAgain" name="password" type="password" placeholder="再次输入密码">
+						</div>
+					</div>	
+				</form>
+			</div>
+			<div class="form-signin-footer">
+				<button class="btn btn-primary btn-lg btn-block" id="btn-signup">注册</button>
+				<button class="btn btn-default btn-block btn-toggle">返回登录</button>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
