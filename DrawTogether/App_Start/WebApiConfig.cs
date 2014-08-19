@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 
-namespace WebIM
+namespace DT
 {
     public static class WebApiConfig
     {

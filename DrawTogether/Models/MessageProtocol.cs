@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace WebIM.Models {
+namespace DT.Models {
 	public class MessageProtocol {
 		/// <summary>
 		/// 发送数据的类型

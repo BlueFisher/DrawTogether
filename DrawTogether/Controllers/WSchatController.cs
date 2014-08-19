@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using WebIM.Models;
+using DT.Models;
 using System.Diagnostics;
 using System.Web.Http;
 using System.Web;
@@ -14,7 +14,7 @@ using System.Net.Http;
 using System.Web.WebSockets;
 using System.Net.WebSockets;
 
-namespace WebIM.Controllers {
+namespace DT.Controllers {
 	public delegate void messageReceiveEventHandler(MessageProtocol mp);
 	public delegate void webSocketSessionEventHandler(string username, WebSocket socket);
 	public class WSChatController : ApiController {

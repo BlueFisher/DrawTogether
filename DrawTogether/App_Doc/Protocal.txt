@@ -1,0 +1,40 @@
+﻿Signin.cshtml
+登录
+	>>> url: TrySignin
+	method: GET
+	data:
+		[string] email
+		[string] password
+	<<<
+	{
+		status: [number],  //1|0 1->Success 0->Fail
+		errorLocation: [string],
+		errInfo: [string],
+		cookies: [
+			{
+				key: [string],
+				value: [string]
+			}
+		]
+	}
+	
+注册
+	>>> url: TrySignup
+	method: GET
+	data:
+		[string] username
+		[string] email
+		[string] password
+		[string] passwordAga
+	<<<
+	{
+		status: [number],  //1|0 1->Success 0->Fail
+		errorLocation: [string],
+		errInfo: [string],
+		cookies: [
+			{
+				key: [string],
+				value: [string]
+			}
+		]
+	}

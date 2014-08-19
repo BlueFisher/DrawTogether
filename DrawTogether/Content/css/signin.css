@@ -1,5 +1,7 @@
 body{
 	background-image: url(../image/background.jpg);
+	background-repeat: no-repeat;
+	background-position: top center;
 }
 .form-signin{
 	position: relative;
