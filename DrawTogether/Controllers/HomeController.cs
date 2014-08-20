@@ -15,7 +15,8 @@ namespace DT.Controllers {
 
 		[Authorize]
 		public ActionResult Index() {
-			return Content("Signin Successfully");
+			ViewBag.username = User.Identity.Name;
+			return View();
 		}
 	}
 

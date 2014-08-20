@@ -114,11 +114,12 @@
     <Content Include="Content\css\window.css" />
     <Content Include="Content\fonts\fontawesome-webfont.svg" />
     <Content Include="Content\image\Logo.png" />
+    <Content Include="Scripts\DTcore.js" />
     <Content Include="Scripts\jQuery\jquery.alert.js" />
     <Content Include="Scripts\jQuery\bootstrap.min.js" />
-    <Content Include="Scripts\IMcore.js" />
     <Content Include="Scripts\jQuery\jquery-2.1.1.min.js" />
     <Content Include="Scripts\jQuery\jquery.cookie.min.js" />
+    <Content Include="Scripts\jQuery\jquery.websocket.js" />
     <Content Include="Scripts\signin.js" />
     <Content Include="Global.asax" />
     <Content Include="Web.config">

@@ -1,86 +1,47 @@
 ﻿@{
-	Layout = null;
+Layout = null;
 }
-
 <!doctype html>
 <html lang="zh-cn">
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 		<meta charset="UTF-8">
-		<title>WebSocket聊天</title>
+		<title>Draw Together</title>
 		<script type="text/javascript" src="~/Scripts/jQuery/jquery-2.1.1.min.js"></script>
 		<script type="text/javascript" src="~/Scripts/jQuery/bootstrap.min.js"></script>
-		<script type="text/javascript" src="~/Scripts/IMcore.js"></script>
+		<script type="text/javascript" src="~/Scripts/jQuery/jquery.alert.js"></script>
+		<script type="text/javascript" src="~/Scripts/jQuery/jquery.websocket.js"></script>
+		<script type="text/javascript" src="~/Scripts/DTcore.js"></script>
+
 		<link rel="stylesheet" href="~/content/css/bootstrap.min.css">
 		<link rel="stylesheet" href="~/content/css/bootstrap-theme.min.css">
+		<link rel="stylesheet" href="~/Content/css/font-awesome.min.css">
 		<link rel="stylesheet" href="~/content/css/global.css">
 		<link rel="stylesheet" href="~/content/css/window.css">
 	</head>
 	<body>
-		<div class="container-fluid">
-			<nav class="navbar navbar-default" role="navigation">
-				<div class="container-fluid">
-					<!-- Brand and toggle get grouped for better mobile display -->
-					<div class="navbar-header">
-						<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						</button>
-						<span class="navbar-brand">你好， @ViewBag.username</span>
-					</div>
-					<!-- Collect the nav links, forms, and other content for toggling -->
-					<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-						<ul class="nav navbar-nav navbar-right">
-							<li><a href="/Home/Signout">注销</a></li>
-						</ul>
-					</div>
-				</div>
-			</nav>	
+		<div class="slide-menu">
+			<div class="slide-menu-logo">
+				<img src="~/Content/image/DTlogo.png" width="50" alt="logo">
+			</div>
+			<div class="list-group slide-menu-list">
+				<a href="javascript:;" class="list-group-item">菜单1</a>
+				<a href="javascript:;" class="list-group-item">菜单2</a>
+				<a href="javascript:;" class="list-group-item">菜单3</a>
+			</div>
+			<div class="list-group slide-menu-footer">
+				<a href="/Account/Signout" class="list-group-item text-center"><span class="fa fa-sign-out fa-lg" title="注销"></span></a>
+			</div>
 		</div>
-		
-		<div class="container">
-			<div class="row window-container">
-				<div class="col-sm-9">
-					<div class="window">
-						<!-- <div class="msg-sender">
-							<div class="avatar">
-								You <small>20:24</small>
-							</div>
-							发送Example
-						</div>
-						<div class="msg-info">连接成功</div>
-						<div class="msg-receiver">
-							<div class="avatar">
-								Alice <small>20:24</small>
-							</div>
-							收到Example
-						</div> -->
-					</div>
-					<div class="well">
-						<div class="input-group">
-							<input type="text" class="form-control" id="message">
-							<div class="input-group-btn">
-								<button class="btn btn-primary" id="btn-send" onclick="$.sendWebSocket()">发送</button>
-								<!-- <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-								<span class="caret"></span>
-								</button>
-								<ul class="dropdown-menu" role="menu">
-									<li><a href="#">选项</a></li>
-									<li class="divider"></li>
-									<li><a href="#">选项</a></li>
-								</ul> -->
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="col-sm-3">
-					<div class="panel panel-default">
-						<div class="panel-heading">用户列表</div>
-						<ul class="list-group" id="user-list">
-						</ul>
-					</div>
-				</div>
+		<div class="canvas-container">
+			<canvas id="canvas"></canvas>
+		</div>
+		<div class="slide-user-list">
+			<div class="list-group">
+				<a class="list-group-item active"><span class="fa fa-list"></span> 用户列表</a>
+				<a href="javascript:;" class="list-group-item">用户1</a>
+				<a href="javascript:;" class="list-group-item">用户2</a>
+				<a href="javascript:;" class="list-group-item">用户3</a>
 			</div>
 		</div>
 	</body>

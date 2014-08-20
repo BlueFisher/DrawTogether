@@ -54,4 +54,15 @@ $.alert = function(options, style) {
 		$alert.alert('close');
 		clearTimeout(timeout);
 	}, alertOptions.cleartime);
+
+	$alert.mouseover(function(event) {
+		clearTimeout(timeout);
+	});
+
+	$alert.mouseout(function(event) {
+		timeout = setTimeout(function() {
+			$alert.alert('close');
+			clearTimeout(timeout);
+		}, alertOptions.cleartime);
+	});
 }
