@@ -42,3 +42,12 @@ body{
 	border-top: 1px solid #e5e5e5;
 	background: #eee;
 }
+.container-fluid{
+	min-height: 100%;
+	padding-bottom: 100px;
+}
+.footer{
+	margin-top: -4em;
+	color: #fff;
+	text-align: center;
+}

@@ -115,6 +115,7 @@
     <Content Include="Content\fonts\fontawesome-webfont.svg" />
     <Content Include="Content\image\Logo.png" />
     <Content Include="Scripts\DTcore.js" />
+    <Content Include="Scripts\easeljs-min.js" />
     <Content Include="Scripts\jQuery\jquery.alert.js" />
     <Content Include="Scripts\jQuery\bootstrap.min.js" />
     <Content Include="Scripts\jQuery\jquery-2.1.1.min.js" />
@@ -132,8 +133,8 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\DTcoreController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\WSchatController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

@@ -10,7 +10,6 @@ using System.Web.Security;
 
 namespace DT.Controllers {
 	public class HomeController : Controller {
-		public static string SessionUsername;
 		UsersDBContext db = new UsersDBContext();
 
 		[Authorize]
