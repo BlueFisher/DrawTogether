@@ -26,3 +26,6 @@
 		errorLocation: [string],
 		errInfo: [string]
 	}
+
+WebSocket协议
+	type: [number]  //-1: mouseup 0:mousedown 1:mousemove

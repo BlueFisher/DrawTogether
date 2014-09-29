@@ -8,16 +8,15 @@ using System.Web.Mvc;
 using System.Web.Routing;
 using System.Web.SessionState;
 using System.Web.Security;
+using DT.Controllers;
 
-namespace DT
-{
-    public class MvcApplication : System.Web.HttpApplication
-    {
-        protected void Application_Start()
-        {
+namespace DT {
+	public class MvcApplication : System.Web.HttpApplication {
+		protected void Application_Start() {
+			WebSocketMessageManage.Init();
 			Database.SetInitializer(new DropCreateDatabaseIfModelChanges<DT.Models.UsersDBContext>());
 			GlobalConfiguration.Configure(WebApiConfig.Register);
-            RouteConfig.RegisterRoutes(RouteTable.Routes);
-        }
-    }
+			RouteConfig.RegisterRoutes(RouteTable.Routes);
+		}
+	}
 }

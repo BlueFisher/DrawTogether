@@ -1,6 +1,7 @@
 body{
 	margin-left: 80px;
 	margin-right: 200px;
+	overflow: hidden;
 }
 .slide-menu{
 	position: fixed;
@@ -34,9 +35,19 @@ body{
 	width: 100%;
 	height: 100%;
 }
+.toolbar{
+	position: fixed;
+	bottom: 15px;
+	margin-left: 5px;
+}
 #canvas{
 	box-shadow: 0 4px 16px rgba(0,0,0,0.2);
 	cursor: default;
+	position: absolute;
+}
+#canvasBg{
+	cursor: default;
+	position: absolute;
 }
 .container{
 	width: 100%;

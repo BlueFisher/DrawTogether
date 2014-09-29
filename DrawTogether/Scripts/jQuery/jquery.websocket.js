@@ -1,14 +1,9 @@
 (function($) {
+	var socket;
 	$.websocket = function(options, callback) {
-		var socket;
 		if ($.isPlainObject(options)) {
 			if (socket.readyState == WebSocket.OPEN) {
-				var sendData = {
-					'date': d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(),
-					'time': d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds()
-				}
-				sendData = $.extend(sendData, options);
-				socket.send(JSON.stringify(sendData));
+				socket.send(JSON.stringify(options));
 			} else {
 				$.alert('发送失败');
 			}
@@ -17,8 +12,16 @@
 			socket.onopen = function() {
 				$.alert('连接成功');
 			}
+			var str = "";
 			socket.onmessage = function(event) {
-				callback(event.data);
+				// var srcStr = event.data;
+				// var lastChar = srcStr.substr(srcStr.length - 1, 1);
+				// if(lastChar!='\"'){
+				// 	str
+				// }
+				// if (event.data.)
+				console.log(event.data);
+				callback($.parseJSON(event.data));
 			}
 			socket.onclose = function() {
 				$.alert('连接关闭');
@@ -26,7 +29,7 @@
 			socket.onerror = function(event) {
 				$.alert({
 					title: 'WebSocket错误！',
-					content: event,
+					content: event.data,
 					style: 'danger'
 				});
 			}
