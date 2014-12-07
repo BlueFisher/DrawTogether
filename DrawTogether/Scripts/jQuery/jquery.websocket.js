@@ -17,6 +17,7 @@
 					content: '连接成功',
 					style: 'success'
 				});
+				//发送登录信息
 				$.websocket({
 					type: 4,
 					id: $('#userInfo').attr('data-userid')

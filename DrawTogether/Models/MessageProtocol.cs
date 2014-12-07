@@ -6,7 +6,9 @@ using System.Diagnostics;
 
 namespace DT.Models {
 	public class ProtBase {
-		public ProtBase(ProtJsonType type) { }
+		public ProtBase(ProtJsonType type) {
+			this.type = type;
+		}
 		public int id { get; set; }
 		public string name { get; set; }
 		public ProtJsonType type { get; set; }
@@ -37,21 +39,25 @@ namespace DT.Models {
 	public class ProtMouseMove : ProtBase {
 		public ProtMouseMove()
 			: base(ProtJsonType.MouseMove) { }
-		int midPt { get; set; }
-		int oldPt { get; set; }
-		int oldMidPt { get; set; }
-		int penProperty { get; set; }
+		public object midPt { get; set; }
+		public object oldPt { get; set; }
+		public object oldMidPt { get; set; }
+		public object penProperty { get; set; }
 	}
 
 	public class ProtUserList : ProtBase {
 		public ProtUserList(User[] users)
 			: base(ProtJsonType.UserList) {
-			userNameList = new string[users.Length];
+			userInfoList = new object[users.Length];
 			for(int i = 0; i < users.Length; i++) {
-				userNameList[i] = users[i].username;
+				userInfoList[i] = new {
+					id = users[i].ID,
+					email = users[i].email,
+					name = users[i].username
+				};
 			}
 		}
-		public string[] userNameList;
+		public object[] userInfoList;
 	}
 
 	public class ProtUserSignin : ProtBase {

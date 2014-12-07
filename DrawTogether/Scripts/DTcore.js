@@ -1,4 +1,15 @@
 (function() {
+
+	var ProtJsonType = {
+		MouseUp: -1,
+		MouseDown: 0,
+		MouseMove: 1,
+		ImgBinary: 2,
+		UserList: 3,
+		Signin: 4,
+		Signout: 5
+	}
+
 	var $container, canvas, canvasBg;
 	$(window).on('load', function() {
 		//初始化
@@ -65,7 +76,7 @@
 		stage.update();
 		setInterval(function() {
 			$.websocket({
-				type: 2,
+				type: ProtJsonType.ImgBinary,
 				imgBinary: stage.toDataURL()
 			});
 		}, 1000);
@@ -76,7 +87,7 @@
 			oldMidPt = oldPt;
 			stage.addEventListener("stagemousemove", handleMouseMove);
 			$.websocket({
-				type: 0,
+				type: ProtJsonType.MouseDown,
 				oldPt: oldPt,
 				oldMidPt: oldMidPt,
 			});
@@ -92,7 +103,7 @@
 			stage.update();
 
 			$.websocket({
-				type: 1,
+				type: ProtJsonType.MouseMove,
 				midPt: midPt,
 				oldPt: oldPt,
 				oldMidPt: oldMidPt,
@@ -108,7 +119,7 @@
 		function handleMouseUp(event) {
 			stage.removeEventListener("stagemousemove", handleMouseMove);
 			$.websocket({
-				type: -1,
+				type: ProtJsonType.MouseUp,
 			});
 		}
 
@@ -148,7 +159,7 @@
 				$.alert(json.errorInfo);
 			} else {
 				switch (json.type) {
-					case 1:
+					case ProtJsonType.MouseMove:
 						var midPt = json.midPt;
 						var oldPt = json.oldPt;
 						var oldMidPt = json.oldMidPt;
@@ -159,7 +170,7 @@
 							.curveTo(oldPt.x, oldPt.y, oldMidPt.x, oldMidPt.y);
 						stageBg.update();
 						break;
-					case 2:
+					case ProtJsonType.ImgBinary:
 						stageBg.clear();
 						shape.graphics.clear();
 						var bitmap = new createjs.Bitmap(json.imgBinary);
@@ -168,15 +179,26 @@
 						stageBg.removeChild(bitmap);
 						stageBg.update();
 						break;
-					case 3:
+					case ProtJsonType.UserList:
 						var $list = $('.slide-user-list .list-group');
-						var userName = $list.children(':eq(1)').text();
+						var userId = $list.children(':eq(1)').attr('data-userid');
 						$list.children(':gt(1)').remove();
-						$.each(json.userNameList, function(index, val) {
-							if (val != userName){
-								$list.append($('<a href="javascript:;" class="list-group-item">').text(val));
+						$.each(json.userInfoList, function(index, val) {
+							if (val.id != userId) {
+								$list.append($('<a href="javascript:;" class="list-group-item">')
+									.text(val.name)
+									.attr('data-userid', val.id)
+									.attr('data-email', val.email)
+								);
 							}
 						});
+						break;
+					case ProtJsonType.Signin:
+						$.alert(json.name + " " + json.id + "上线");
+						break;
+					case ProtJsonType.Signout:
+						$.alert(json.name + " " + json.id + "下线");
+						break;
 				}
 			}
 		});
