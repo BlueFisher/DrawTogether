@@ -5,26 +5,38 @@
 			if (socket.readyState == WebSocket.OPEN) {
 				socket.send(JSON.stringify(options));
 			} else {
-				$.alert('发送失败');
+				$.alert({
+					content: '发送失败: ',
+					style: 'danger'
+				});
 			}
 		} else {
 			socket = new WebSocket('ws://' + location.host + '/api/DTcore');
 			socket.onopen = function() {
-				$.alert('连接成功');
+				$.alert({
+					content: '连接成功',
+					style: 'success'
+				});
+				$.websocket({
+					type: 4,
+					id: $('#userInfo').attr('data-userid')
+				});
 			}
 			var str = "";
 			socket.onmessage = function(event) {
-				// var srcStr = event.data;
-				// var lastChar = srcStr.substr(srcStr.length - 1, 1);
-				// if(lastChar!='\"'){
-				// 	str
-				// }
-				// if (event.data.)
-				console.log(event.data);
-				callback($.parseJSON(event.data));
+				var srcStr = event.data;
+				var lastChar = srcStr.substr(srcStr.length - 1, 1);
+				str += srcStr;
+				if (lastChar == '}') {
+					callback($.parseJSON(str));
+					str = "";
+				}
 			}
 			socket.onclose = function() {
-				$.alert('连接关闭');
+				$.alert({
+					content: '连接关闭',
+					style: 'danger'
+				});
 			}
 			socket.onerror = function(event) {
 				$.alert({

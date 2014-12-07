@@ -16,7 +16,7 @@ using System.Diagnostics;
 using System.Timers;
 
 namespace DT.Controllers {
-	public delegate void WebSocketMsgReceivedEventHandler(string json,int userid);
+	public delegate void WebSocketMsgReceivedEventHandler(string json, WebSocket ws);
 
 	public class DTcoreController : ApiController {
 		public static event WebSocketMsgReceivedEventHandler WebSocketMsgReceived;
@@ -29,96 +29,140 @@ namespace DT.Controllers {
 		}
 		private async Task ProcessWSChat(AspNetWebSocketContext context) {
 			WebSocket socket = context.WebSocket;
-			int userid = AccountController.UserInfo.ID;
-			WebSocketMessageManage.AddUserSocket(userid, socket);
 			try {
+				string receivedMessage = "";
 				while(true) {
 					if(socket.State == WebSocketState.Open) {
-						ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[102400]);
+						ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[1024]);
 						WebSocketReceiveResult result = await socket.ReceiveAsync(buffer, CancellationToken.None);
 						string json = Encoding.UTF8.GetString(buffer.Array, 0, result.Count);
+
 						if(!String.IsNullOrEmpty(json)) {
-							Debug.WriteLine(json);
-							//WebSocketMsgContainer wsmContainer = JsonConvert.DeserializeObject<WebSocketMsgContainer>(json);
-							WebSocketMsgReceived(json, userid);
+							receivedMessage += json;
+							if(json.EndsWith("}")) {
+								WebSocketMsgReceived(receivedMessage, socket);
+								receivedMessage = "";
+							}
 						}
 					}
 					else {
-						if(!WebSocketMessageManage.LockRemoveList.Contains(userid)) {
-							WebSocketMessageManage.RemoveSocket(userid);
+						if(!WebSocketMessageManage.LockRemoveList.Contains(socket)) {
+							WebSocketMessageManage.RemoveSocket(socket);
 						}
 						else {
-							WebSocketMessageManage.LockRemoveList.Remove(userid);
+							WebSocketMessageManage.LockRemoveList.Remove(socket);
 						}
 						break;
 					}
 				}
 			}
 			catch(Exception e) {
-				if(!WebSocketMessageManage.LockRemoveList.Contains(userid)) {
-					WebSocketMessageManage.RemoveSocket(userid);
-				}
-				else {
-					WebSocketMessageManage.LockRemoveList.Remove(userid);
-				}
+				//if(!WebSocketMessageManage.LockRemoveList.Contains(socket)) {
+					WebSocketMessageManage.RemoveSocket(socket);
+				//}
+				//else {
+				//	WebSocketMessageManage.LockRemoveList.Remove(socket);
+				//}
 				Debug.WriteLine(DateTime.Now + ": " + e.Message);
 			}
 		}
 	}
 
 	public static class WebSocketMessageManage {
-		private static Dictionary<int, WebSocket> userSocketMap = new Dictionary<int, WebSocket>();
-		public static List<int> LockRemoveList = new List<int>();
+		private static UsersDBContext db = new UsersDBContext();
+		private static Dictionary<WebSocket, User> userSocketMap = new Dictionary<WebSocket, User>();
+		public static List<WebSocket> LockRemoveList = new List<WebSocket>();
 		public static System.Timers.Timer timer = new System.Timers.Timer(1000);
 		public static void Init() {
 			DTcoreController.WebSocketMsgReceived += DTcoreController_WebSocketMsgReceived;
 			timer.Elapsed += (object sender, ElapsedEventArgs e) => {
 				if(userSocketMap.Count != 0 && LockRemoveList.Count == 0) {
-					foreach(KeyValuePair<int, WebSocket> item in userSocketMap) {
-						Debug.WriteLine(item.Key + " : " + item.Value.GetHashCode());
+					foreach(KeyValuePair<WebSocket, User> item in userSocketMap) {
+						Debug.WriteLine(item.Value.username + " : " + item.Key.GetHashCode());
 					}
 				}
 			};
 			timer.Start();
 		}
 
-		static void DTcoreController_WebSocketMsgReceived(string json,int userid) {
-			//MouseType type = JsonConvert.DeserializeObject<MousePenProperty>(json).type;
-			SendToAll(json,userid);
+		static void DTcoreController_WebSocketMsgReceived(string json, WebSocket ws) {
+			User tUser = userSocketMap[ws];
+			ProtJsonType type = JsonConvert.DeserializeObject<ProtJsonTypeCheck>(json).type;
+			switch(type) {
+				//case ProtJsonType.MouseDown:
+				case ProtJsonType.MouseMove:
+				//case ProtJsonType.MouseUp:
+					ProtMouseMove tMouserMove = JsonConvert.DeserializeObject<ProtMouseMove>(json);
+					tMouserMove.id = tUser.ID;
+					tMouserMove.name = tUser.username;
+					json = JsonConvert.SerializeObject(tMouserMove);
+					SendToAll(json, ws);
+					break;
+				case ProtJsonType.ImgBinary:
+					ProtImgBinary tImgBinary = JsonConvert.DeserializeObject<ProtImgBinary>(json);
+					tImgBinary.id = tUser.ID;
+					tImgBinary.name = tUser.username;
+					SendToAll(json,ws);
+					break;
+				case ProtJsonType.Signin:
+					int id = JsonConvert.DeserializeObject<ProtUserSignin>(json).id;
+					List<User> list = (
+						from p in db.Users
+						where p.ID == id
+						select p
+					).ToList();
+					if(list.Count > 0) {
+						AddUserSocket(ws, list[0]);
+					}
+					else {
+						ws.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
+					}
+					break;
+			}
+
 		}
 
-		public static void AddUserSocket(int userid, WebSocket ws) {
-			if(!userSocketMap.Keys.Contains(userid)) {
-				userSocketMap.Add(userid, ws);
+		public static void AddUserSocket(WebSocket ws, User user) {
+			if(!userSocketMap.Values.Contains(user)) {
+				userSocketMap.Add(ws, user);
+				SendUserNameList(ws);
 			}
 			else {
 				string returnMessage = JsonConvert.SerializeObject(new {
 					status = 0,
 					errorInfo = "您被迫下线，该帐号在其他地方登陆！"
 				});
-				ArraySegment<byte> buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(returnMessage));
-				userSocketMap[userid].SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
-				userSocketMap[userid].CloseOutputAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
-				LockRemoveList.Add(userid);
-				userSocketMap[userid] = ws;
+				LockRemoveList.Add(ws);
+				SendToOne(returnMessage, ws);
+				ws.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
+				userSocketMap[ws] = user;
 			}
 		}
-		public static void RemoveSocket(int userid) {
-			userSocketMap.Remove(userid);
+		public static void RemoveSocket(WebSocket ws) {
+			userSocketMap.Remove(ws);
+			SendUserNameList();
+		}
+		
+		public static void SendToOne(string json, WebSocket ws){
+			ArraySegment<byte> buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(json));
+			ws.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
 		}
 		public static void SendToAll(string json) {
-			ArraySegment<byte> buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(json));
-			foreach(WebSocket ws in userSocketMap.Values) {
-				ws.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
+			foreach(WebSocket ws in userSocketMap.Keys) {
+				SendToOne(json, ws);
 			}
 		}
-		public static void SendToAll(string json,int exceptId) {
-			ArraySegment<byte> buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(json));
-			foreach(KeyValuePair<int, WebSocket> item in userSocketMap) {
-				if(item.Key != exceptId) {
-					item.Value.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
+		public static void SendToAll(string json, WebSocket exceptWs) {
+			foreach(WebSocket ws in userSocketMap.Keys) {
+				if(ws != exceptWs) {
+					SendToOne(json, ws);
 				}
 			}
+		}
+		private static void SendUserNameList(WebSocket ws) {
+			ProtUserList ul = new ProtUserList(userSocketMap.Values.ToArray<User>());
+			string json = JsonConvert.SerializeObject(ul);
+			SendToOne(json, ws);
 		}
 	}
 }

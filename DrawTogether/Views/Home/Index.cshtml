@@ -25,21 +25,37 @@ Layout = null;
 			<div class="slide-menu-logo">
 				<img src="~/Content/image/DTlogo.png" width="50" alt="logo">
 			</div>
-			<div class="list-group slide-menu-list">
-				<a href="javascript:;" class="list-group-item" id="tool">Tool</a>
-				<a href="javascript:;" class="list-group-item" id="clearShape">清除</a>
-				<a href="javascript:;" class="list-group-item active" id="layer1">图层1</a>
-				<a href="javascript:;" class="list-group-item" id="layer2">图层2</a>
-				<a href="javascript:;" class="list-group-item" id="reloadCanvas">重新载入</a>
+
+			<div class="slide-menu-list">
+				<div class="form-group">
+					<div class="btn-group-vertical">
+						<button type="button" class="btn btn-default pen-color" data-property="red">红色</button>
+						<button type="button" class="btn btn-default active pen-color" data-property="black">黑色</button>
+						<button type="button" class="btn btn-default pen-color" data-property="blue">蓝色</button>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="btn-group-vertical">
+						<button type="button" class="btn btn-default pen-thickness" data-property="10">粗</button>
+						<button type="button" class="btn btn-default pen-thickness active" data-property="5">中</button>
+						<button type="button" class="btn btn-default pen-thickness" data-property="1">细</button>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="btn-group-vertical">
+						<button type="button" class="btn btn-default" id="clearShape">清除</button>
+						
+					</div>
+				</div>
 			</div>
 			<div class="list-group slide-menu-footer">
-				<a href="/Account/Signout" class="list-group-item text-center"><span class="fa fa-sign-out fa-lg" title="注销"></span></a>
+				<a href="/Account/Signout" class="list-group-item text-center" title="注销"><span class="fa fa-sign-out fa-lg"></span></a>
 			</div>
 		</div>
 		<div class="canvas-container">
 			<canvas id="canvasBg"></canvas>
 			<canvas id="canvas"></canvas>
-			<div class="toolbar">
+			<!-- <div class="toolbar">
 				<div class="btn-toolbar" role="toolbar">
 					<div class="btn-group">
 						<button class="btn btn-default pen-color" data-property="red"><span class="text-red">红色</span></button>
@@ -52,17 +68,14 @@ Layout = null;
 						<button class="btn btn-default pen-thickness" data-property="1">细</button>
 					</div>
 				</div>
-			</div>
+			</div> -->
 		</div>
 		<div class="slide-user-list">
 			<div class="list-group">
 				<a class="list-group-item active"><span class="fa fa-list"></span> 用户列表</a>
-				<a href="javascript:;" class="list-group-item">用户1</a>
-				<a href="javascript:;" class="list-group-item">用户2</a>
-				<a href="javascript:;" class="list-group-item">用户3</a>
-
+				<a id="userInfo" data-userid="@ViewBag.UserId" href="javascript:;" class="list-group-item list-group-item-info">@ViewBag.UserName</a>
 			</div>
-			<div class="copyright">Copyright © 2014</div>
+			<div class="copyright">Copyright © 2014-2015</div>
 			<div class="copyright">Fisher Chang</div>
 		</div>
 	</body>

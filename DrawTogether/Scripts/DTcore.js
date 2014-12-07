@@ -11,6 +11,12 @@
 		main();
 	});
 
+	function main() {
+		initStage();
+		initStageBg();
+		initWebSocket();
+	}
+
 	var maxWidth = 0,
 		maxHeight = 0;
 	$(window).on('resize', function() {
@@ -57,12 +63,12 @@
 		stage.addEventListener("stagemouseup", handleMouseUp);
 		stage.addChild(shape);
 		stage.update();
-		// setInterval(function() {
-		// 	$.post('/path/to/file', {
-		// 		type: 0,
-		// 		imgBack: stage.toDataURL()
-		// 	});
-		// }, 5000);
+		setInterval(function() {
+			$.websocket({
+				type: 2,
+				imgBinary: stage.toDataURL()
+			});
+		}, 1000);
 		var oldPt, oldMidPt;
 
 		function handleMouseDown() {
@@ -86,7 +92,6 @@
 			stage.update();
 
 			$.websocket({
-				status: 1,
 				type: 1,
 				midPt: midPt,
 				oldPt: oldPt,
@@ -109,22 +114,22 @@
 
 		$('#clearShape').click(function(event) {
 			stage.clear();
-			shape.clear();
+			shape.graphics.clear();
 			stage.update();
 		});
 		$('.pen-color').click(function() {
-			$('.pen-color').removeClass('btn-primary').addClass('btn-default');
-			$(this).toggleClass('btn-primary btn-default');
+			$('.pen-color').removeClass('active');
+			$(this).toggleClass('active');
 			penProperty.color = $(this).attr('data-property');
 		});
 		$('.pen-thickness').click(function() {
-			$('.pen-thickness').removeClass('btn-primary').addClass('btn-default');
-			$(this).toggleClass('btn-primary btn-default');
+			$('.pen-thickness').removeClass('active');
+			$(this).toggleClass('active');
 			penProperty.thickness = $(this).attr('data-property');
 		});
-		$('#tool').click(function(){
+		$('#tool').click(function() {
 			$.websocket({
-				type:2,
+				type: 2,
 				imgBinary: stage.toDataURL()
 			})
 		})
@@ -133,16 +138,6 @@
 	function initStageBg() {
 		stageBg = new createjs.Stage("canvasBg");
 		stageBg.autoClear = false;
-		var img = new Image();
-		img.src = '/Content/image/testPic.png'
-		img.onload = function() {
-			// var bitmap = new createjs.Bitmap(img);
-			// var blurFilter = new createjs.BlurFilter(5, 5, 10);
-			// bitmap.filters = [blurFilter];
-			// bitmap.cache(0, 0, img.width, img.height);
-			// stageBg.addChild(bitmap);
-			// stageBg.update();
-		}
 	}
 
 	function initWebSocket() {
@@ -152,33 +147,38 @@
 			if (json.status == 0) {
 				$.alert(json.errorInfo);
 			} else {
-				if (json.type == 1) {
-					var midPt = json.midPt;
-					var oldPt = json.oldPt;
-					var oldMidPt = json.oldMidPt;
-					shape.graphics.clear()
-						.setStrokeStyle(json.penProperty.thickness, 'round', 'round')
-						.beginStroke(json.penProperty.color)
-						.moveTo(midPt.x, midPt.y)
-						.curveTo(oldPt.x, oldPt.y, oldMidPt.x, oldMidPt.y);
-					stageBg.update();
-				} else if (json.type == 2) {
-					stageBg.clear();
-					shape.clear();
-					var bitmap = new createjs.Bitmap(json.imgBinary);
-					stage.addChild(bitmap);
-					bitmap.onload = function(){
-						bitmap.draw(stageBg.canvas.getContext('2d'));
+				switch (json.type) {
+					case 1:
+						var midPt = json.midPt;
+						var oldPt = json.oldPt;
+						var oldMidPt = json.oldMidPt;
+						shape.graphics.clear()
+							.setStrokeStyle(json.penProperty.thickness, 'round', 'round')
+							.beginStroke(json.penProperty.color)
+							.moveTo(midPt.x, midPt.y)
+							.curveTo(oldPt.x, oldPt.y, oldMidPt.x, oldMidPt.y);
 						stageBg.update();
-					}
+						break;
+					case 2:
+						stageBg.clear();
+						shape.graphics.clear();
+						var bitmap = new createjs.Bitmap(json.imgBinary);
+						stageBg.addChild(bitmap);
+						bitmap.draw(stageBg.canvas.getContext('2d'));
+						stageBg.removeChild(bitmap);
+						stageBg.update();
+						break;
+					case 3:
+						var $list = $('.slide-user-list .list-group');
+						var userName = $list.children(':eq(1)').text();
+						$list.children(':gt(1)').remove();
+						$.each(json.userNameList, function(index, val) {
+							if (val != userName){
+								$list.append($('<a href="javascript:;" class="list-group-item">').text(val));
+							}
+						});
 				}
 			}
 		});
-	}
-
-	function main() {
-		initStage();
-		initStageBg();
-		initWebSocket();
 	}
 })();

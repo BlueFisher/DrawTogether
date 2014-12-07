@@ -28,4 +28,8 @@
 	}
 
 WebSocket协议
-	type: [number]  //-1: mouseup 0:mousedown 1:mousemove
+	type: [number]  
+		//-1: mouseup 0:mousedown 1:mousemove
+		//2: 画布
+		//3: 用户列表
+		//4: 登录
