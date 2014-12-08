@@ -151,13 +151,16 @@ namespace DT.Controllers {
 		}
 		private static void userSignin(WebSocket ws, User user) {
 			//给当前登录用户发送用户列表
-			ProtUserList ul = new ProtUserList(userSocketMap.Values.ToArray<User>());
+			User[] userArr = userSocketMap.Values.ToArray<User>();
+			userArr.OrderBy(t => t.ID);
+			ProtUserList ul = new ProtUserList(userArr);
 			string json = JsonConvert.SerializeObject(ul);
 			SendToOne(json, ws);
 			//给除了当前登录用户以外的所有用户发送登录信息
 			ProtUserSignin us = new ProtUserSignin() {
 				id = user.ID,
 				name = user.username,
+				email = user.email
 			};
 			json = JsonConvert.SerializeObject(us);
 			SendToAll(json, ws);
@@ -166,6 +169,7 @@ namespace DT.Controllers {
 			ProtUserSignout us = new ProtUserSignout() {
 				id = user.ID,
 				name = user.username,
+				email = user.email
 			};
 			string json = JsonConvert.SerializeObject(us);
 			SendToAll(json, ws);
@@ -173,12 +177,16 @@ namespace DT.Controllers {
 
 		public static void Init() {
 			DTcoreController.WebSocketMsgReceived += DTcoreController_WebSocketMsgReceived;
+			
 			timer.Elapsed += (object sender, ElapsedEventArgs e) => {
-				if(userSocketMap.Count != 0 && LockRemoveList.Count == 0) {
-					foreach(KeyValuePair<WebSocket, User> item in userSocketMap) {
-						Debug.WriteLine(item.Value.username + " : " + item.Key.GetHashCode());
+				try {
+					if(userSocketMap.Count != 0 && LockRemoveList.Count == 0) {
+						foreach(KeyValuePair<WebSocket, User> item in userSocketMap) {
+							Debug.WriteLine(item.Value.username + " : " + item.Key.GetHashCode());
+						}
 					}
 				}
+				catch { }
 			};
 			timer.Start();
 		}

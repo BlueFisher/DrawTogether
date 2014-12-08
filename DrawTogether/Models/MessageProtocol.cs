@@ -63,10 +63,12 @@ namespace DT.Models {
 	public class ProtUserSignin : ProtBase {
 		public ProtUserSignin()
 			: base(ProtJsonType.Signin) { }
+		public string email { get; set; }
 	}
 	public class ProtUserSignout : ProtBase {
 		public ProtUserSignout()
 			: base(ProtJsonType.Signout) { }
+		public string email { get; set; }
 	}
 
 	public class ProtImgBinary : ProtBase {

@@ -74,12 +74,12 @@
 		stage.addEventListener("stagemouseup", handleMouseUp);
 		stage.addChild(shape);
 		stage.update();
-		setInterval(function() {
-			$.websocket({
-				type: ProtJsonType.ImgBinary,
-				imgBinary: stage.toDataURL()
-			});
-		}, 1000);
+		// setInterval(function() {
+		// 	$.websocket({
+		// 		type: ProtJsonType.ImgBinary,
+		// 		imgBinary: stage.toDataURL()
+		// 	});
+		// }, 1000);
 		var oldPt, oldMidPt;
 
 		function handleMouseDown() {
@@ -158,6 +158,14 @@
 			if (json.status == 0) {
 				$.alert(json.errorInfo);
 			} else {
+				var $userList = $('.slide-user-list .list-group');
+
+				function getItem(name, id, email) {
+					return $('<a href="javascript:;" class="list-group-item">')
+						.text(name)
+						.attr('data-userid', id)
+						.attr('data-email', email)
+				}
 				switch (json.type) {
 					case ProtJsonType.MouseMove:
 						var midPt = json.midPt;
@@ -180,24 +188,34 @@
 						stageBg.update();
 						break;
 					case ProtJsonType.UserList:
-						var $list = $('.slide-user-list .list-group');
-						var userId = $list.children(':eq(1)').attr('data-userid');
-						$list.children(':gt(1)').remove();
+						var userId = $userList.children(':eq(1)').attr('data-userid');
+						$userList.children(':gt(1)').remove();
 						$.each(json.userInfoList, function(index, val) {
 							if (val.id != userId) {
-								$list.append($('<a href="javascript:;" class="list-group-item">')
-									.text(val.name)
-									.attr('data-userid', val.id)
-									.attr('data-email', val.email)
-								);
+								$userList.append(getItem(val.name, val.id, val.email));
 							}
 						});
 						break;
 					case ProtJsonType.Signin:
-						$.alert(json.name + " " + json.id + "上线");
+						var $items = $userList.children(':gt(1)');
+						var isInserted = false;
+						$items.each(function(index, el) {
+							if (json.id < $(el).attr('data-userid')) {
+								$(el).before(getItem(json.name, json.id, json.email));
+								isInserted = true;
+							}
+						});
+						if(!isInserted){
+							$userList.append(getItem(json.name, json.id, json.email));
+						}
 						break;
 					case ProtJsonType.Signout:
-						$.alert(json.name + " " + json.id + "下线");
+						var $items = $userList.children(':gt(1)');
+						$items.each(function(index, el) {
+							if (json.id == $(el).attr('data-userid')) {
+								$(el).remove();
+							}
+						});
 						break;
 				}
 			}
