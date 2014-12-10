@@ -51,7 +51,7 @@ body{
 	cursor: default;
 	position: absolute;
 }
-#canvasBg{
+.user-canvas{
 	cursor: default;
 	position: absolute;
 }
