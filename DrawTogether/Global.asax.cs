@@ -13,8 +13,7 @@ using DT.Controllers;
 namespace DT {
 	public class MvcApplication : System.Web.HttpApplication {
 		protected void Application_Start() {
-			WebSocketMessageManage.Init();
-			Database.SetInitializer(new DropCreateDatabaseIfModelChanges<DT.Models.UsersDBContext>());
+			//WebSocketMessageManage.Init();
 			GlobalConfiguration.Configure(WebApiConfig.Register);
 			RouteConfig.RegisterRoutes(RouteTable.Routes);
 		}

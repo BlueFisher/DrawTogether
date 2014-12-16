@@ -48,7 +48,8 @@
 		RemoveUserCanvas: function(json) {
 			this.Traverse(function(i, user) {
 				if (user.id == json.id && user.name == json.name) {
-					_users.splice(i, 1);
+					UserCanvasManager._users.splice(i, 1);
+					$(UserCanvasManager.UserCanvas).prev('[data-userid="' + user.id + '"]').remove();
 				}
 			})
 		},
@@ -117,7 +118,7 @@
 			// 		type: ProtJsonType.ImgBinary,
 			// 		imgBinary: stage.toDataURL()
 			// 	});
-			// }, 1000);
+			// }, 2000);
 			var oldPt, oldMidPt;
 
 			function handleMouseDown() {
@@ -189,7 +190,7 @@
 		//初始化
 		$container = $('.canvas-container');
 		UserCanvasManager.Initalize();
-		initWebSocket();
+		// initWebSocket();
 	});
 
 	var maxWidth = 0,
@@ -248,7 +249,7 @@
 					case ProtJsonType.ImgBinary:
 						UserCanvasManager.ImgBinaryReceived(json);
 						break;
-						
+
 					case ProtJsonType.UserList:
 						var userId = $userList.children(':eq(1)').attr('data-userid');
 						$userList.children(':gt(1)').remove();

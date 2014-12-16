@@ -9,7 +9,7 @@ namespace DT.Models {
 		public ProtBase(ProtJsonType type) {
 			this.type = type;
 		}
-		public int id { get; set; }
+		public string id { get; set; }
 		public string name { get; set; }
 		public ProtJsonType type { get; set; }
 	}
@@ -46,14 +46,14 @@ namespace DT.Models {
 	}
 
 	public class ProtUserList : ProtBase {
-		public ProtUserList(User[] users)
+		public ProtUserList(ApplicationUser[] users)
 			: base(ProtJsonType.UserList) {
 			userInfoList = new object[users.Length];
 			for(int i = 0; i < users.Length; i++) {
 				userInfoList[i] = new {
-					id = users[i].ID,
-					email = users[i].email,
-					name = users[i].username
+					id = users[i].Id,
+					email = users[i].Email,
+					name = users[i].UserName
 				};
 			}
 		}

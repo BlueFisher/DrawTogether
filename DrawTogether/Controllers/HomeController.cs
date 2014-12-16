@@ -7,28 +7,31 @@ using System.Web.Mvc;
 using DT.Models;
 using DT.App_Code;
 using System.Web.Security;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Owin;
 
 namespace DT.Controllers {
 	public class HomeController : Controller {
-
-		UsersDBContext db = new UsersDBContext();
-
+		private ApplicationUserManager _userManager;
+		public ApplicationUserManager UserManager {
+			get {
+				return _userManager ?? HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
+			}
+			private set {
+				_userManager = value;
+			}
+		}
 		[Authorize]
 		public ActionResult Index() {
+			ApplicationUser user;
 			if(Session["User"] != null) {
-				User user = (User)Session["User"];
-				ViewBag.UserName = user.username;
-				ViewBag.UserId = user.ID;
+				user = (ApplicationUser)Session["User"];
 			}
 			else {
-				User user = (
-					from p in db.Users
-					where p.username == User.Identity.Name
-					select p
-				).ToList()[0];
-				ViewBag.UserName = user.username;
-				ViewBag.UserId = user.ID;
+				user = UserManager.FindByName(User.Identity.Name);
 			}
+			ViewBag.UserName = user.UserName;
+			ViewBag.UserId = user.Id;
 			return View();
 		}
 	}

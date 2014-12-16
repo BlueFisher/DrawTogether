@@ -14,6 +14,7 @@ using System.Web.Http;
 using System.Web.WebSockets;
 using System.Diagnostics;
 using System.Timers;
+using DT.App_Code;
 
 namespace DT.Controllers {
 	public delegate void WebSocketMsgReceivedEventHandler(string json, WebSocket ws);
@@ -46,61 +47,56 @@ namespace DT.Controllers {
 						}
 					}
 					else {
-						if(!WebSocketMessageManage.LockRemoveList.Contains(socket))
-							WebSocketMessageManage.RemoveSocket(socket);
-						else
-							WebSocketMessageManage.LockRemoveList.Remove(socket);
-						break;
+						//if(!WebSocketMessageManage.LockRemoveList.Contains(socket))
+						//	WebSocketMessageManage.RemoveSocket(socket);
+						//else
+						//	WebSocketMessageManage.LockRemoveList.Remove(socket);
+						//break;
 					}
 				}
 			}
 			catch(Exception e) {
-				//if(!WebSocketMessageManage.LockRemoveList.Contains(socket)) {
-				WebSocketMessageManage.RemoveSocket(socket);
-				//}
-				//else {
-				//	WebSocketMessageManage.LockRemoveList.Remove(socket);
-				//}
-				Debug.WriteLine(DateTime.Now + ": " + e.Message);
+				//WebSocketMessageManage.RemoveSocket(socket);
+				LogRecorder.Record(e.Message);
 			}
 		}
 	}
 
-	public static class WebSocketMessageManage {
+	/*public static class WebSocketMessageManage {
 		private static UsersDBContext db = new UsersDBContext();
-		private static Dictionary<WebSocket, User> userSocketMap = new Dictionary<WebSocket, User>();
+		private static Dictionary<WebSocket, ApplicationUser> userSocketMap = new Dictionary<WebSocket, ApplicationUser>();
 		public static List<WebSocket> LockRemoveList = new List<WebSocket>();
 		private static System.Timers.Timer timer = new System.Timers.Timer(1000);
 
 
 		private static void DTcoreController_WebSocketMsgReceived(string json, WebSocket ws) {
-			User tUser = null;
+			ApplicationUser tUser = null;
 			if(userSocketMap.Keys.Contains<WebSocket>(ws)) {
 				tUser = userSocketMap[ws];
 			}
 			ProtJsonType type = JsonConvert.DeserializeObject<ProtJsonTypeCheck>(json).type;
 			switch(type) {
-				//case ProtJsonType.MouseDown:
-				//case ProtJsonType.MouseUp:
+				case ProtJsonType.MouseDown:
+				case ProtJsonType.MouseUp:
 				case ProtJsonType.MouseMove:
 					ProtMouseMove tMouserMove = JsonConvert.DeserializeObject<ProtMouseMove>(json);
-					tMouserMove.id = tUser.ID;
-					tMouserMove.name = tUser.username;
+					tMouserMove.id = tUser.Id;
+					tMouserMove.name = tUser.UserName;
 					json = JsonConvert.SerializeObject(tMouserMove);
 					SendToAll(json, ws);
 					break;
 				case ProtJsonType.ImgBinary:
 					ProtImgBinary tImgBinary = JsonConvert.DeserializeObject<ProtImgBinary>(json);
-					tImgBinary.id = tUser.ID;
-					tImgBinary.name = tUser.username;
+					tImgBinary.id = tUser.Id;
+					tImgBinary.name = tUser.UserName;
 					json = JsonConvert.SerializeObject(tImgBinary);
 					SendToAll(json, ws);
 					break;
 				case ProtJsonType.Signin:
-					int id = JsonConvert.DeserializeObject<ProtUserSignin>(json).id;
-					List<User> list = (
-						from p in db.Users
-						where p.ID == id
+					string id = JsonConvert.DeserializeObject<ProtUserSignin>(json).id;
+					List<ApplicationUser> list = (
+						from p in db
+						where p.Id == id
 						select p
 					).ToList();
 					if(list.Count > 0) {
@@ -111,10 +107,9 @@ namespace DT.Controllers {
 					}
 					break;
 			}
-
 		}
 
-		private static void AddUserSocket(WebSocket ws, User user) {
+		private static void AddUserSocket(WebSocket ws, ApplicationUser user) {
 			if(!userSocketMap.Values.Contains(user)) {
 				userSocketMap.Add(ws, user);
 				userSignin(ws, user);
@@ -133,9 +128,13 @@ namespace DT.Controllers {
 
 
 		private static void SendToOne(string json, WebSocket ws) {
-			ArraySegment<byte> buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(json));
-			ws.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
-			Debug.WriteLine(json);
+			try {
+				ArraySegment<byte> buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(json));
+				ws.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
+			}
+			catch(Exception e) {
+				LogRecorder.Record(e.Message);
+			}
 		}
 		private static void SendToAll(string json) {
 			foreach(WebSocket ws in userSocketMap.Keys) {
@@ -149,27 +148,27 @@ namespace DT.Controllers {
 				}
 			}
 		}
-		private static void userSignin(WebSocket ws, User user) {
+		private static void userSignin(WebSocket ws, ApplicationUser user) {
 			//给当前登录用户发送用户列表
-			User[] userArr = userSocketMap.Values.ToArray<User>();
-			userArr.OrderBy(t => t.ID);
+			ApplicationUser[] userArr = userSocketMap.Values.ToArray<ApplicationUser>();
+			userArr.OrderBy(t => t.Id);
 			ProtUserList ul = new ProtUserList(userArr);
 			string json = JsonConvert.SerializeObject(ul);
 			SendToOne(json, ws);
 			//给除了当前登录用户以外的所有用户发送登录信息
 			ProtUserSignin us = new ProtUserSignin() {
-				id = user.ID,
-				name = user.username,
-				email = user.email
+				id = user.Id,
+				name = user.UserName,
+				email = user.Email
 			};
 			json = JsonConvert.SerializeObject(us);
 			SendToAll(json, ws);
 		}
-		private static void userSignout(WebSocket ws, User user) {
+		private static void userSignout(WebSocket ws, ApplicationUser user) {
 			ProtUserSignout us = new ProtUserSignout() {
-				id = user.ID,
-				name = user.username,
-				email = user.email
+				id = user.Id,
+				name = user.UserName,
+				email = user.Email
 			};
 			string json = JsonConvert.SerializeObject(us);
 			SendToAll(json, ws);
@@ -181,18 +180,18 @@ namespace DT.Controllers {
 			timer.Elapsed += (object sender, ElapsedEventArgs e) => {
 				try {
 					if(userSocketMap.Count != 0 && LockRemoveList.Count == 0) {
-						foreach(KeyValuePair<WebSocket, User> item in userSocketMap) {
-							Debug.WriteLine(item.Value.username + " : " + item.Key.GetHashCode());
+						foreach(KeyValuePair<WebSocket, ApplicationUser> item in userSocketMap) {
+							Debug.WriteLine(item.Value.UserName + " : " + item.Key.GetHashCode());
 						}
 					}
 				}
 				catch { }
 			};
-			timer.Start();
+			//timer.Start();
 		}
 		public static void RemoveSocket(WebSocket ws) {
 			userSignout(ws, userSocketMap[ws]);
 			userSocketMap.Remove(ws);
 		}
-	}
+	}*/
 }
