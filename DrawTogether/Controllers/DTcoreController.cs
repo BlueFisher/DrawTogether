@@ -3,6 +3,7 @@ using DT.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -64,7 +65,13 @@ namespace DT.Controllers {
 
 	public static class WebSocketMessageManager {
 		private static ApplicationDbContext db = new ApplicationDbContext();
+		/// <summary>
+		/// 用户与WebSocket键值对
+		/// </summary>
 		private static Dictionary<WebSocket, ApplicationUser> userSocketMap = new Dictionary<WebSocket, ApplicationUser>();
+		/// <summary>
+		/// 被锁定无法移除的用户列表
+		/// </summary>
 		public static List<WebSocket> LockRemoveList = new List<WebSocket>();
 		private static System.Timers.Timer timer = new System.Timers.Timer(1000);
 
@@ -82,25 +89,29 @@ namespace DT.Controllers {
 					ProtMouseMove tMouserMove = JsonConvert.DeserializeObject<ProtMouseMove>(json);
 					tMouserMove.id = tUser.Id;
 					tMouserMove.name = tUser.UserName;
-					json = JsonConvert.SerializeObject(tMouserMove);
-					SendToAll(json, ws);
+					SendToAll(tMouserMove, ws);
 					break;
 				case ProtJsonType.ImgBinary:
 					ProtImgBinary tImgBinary = JsonConvert.DeserializeObject<ProtImgBinary>(json);
+
+					CanvasModels cm = new CanvasModels {
+						UserId = tUser.Id,
+						ImgBinary = tImgBinary.imgBinary
+					};
+					var tEntry = db.Entry(cm);
+					tEntry.State = EntityState.Modified;
+					db.SaveChanges();
+					tEntry.State = EntityState.Detached;
+
 					tImgBinary.id = tUser.Id;
 					tImgBinary.name = tUser.UserName;
-					json = JsonConvert.SerializeObject(tImgBinary);
-					SendToAll(json, ws);
+					SendToAll(tImgBinary, ws);
 					break;
 				case ProtJsonType.Signin:
 					string id = JsonConvert.DeserializeObject<ProtUserSignin>(json).id;
-					List<ApplicationUser> list = (
-						from p in db.Users
-						where p.Id == id
-						select p
-					).ToList();
-					if(list.Count > 0) {
-						AddUserSocket(ws, list[0]);
+					ApplicationUser user = db.Users.Find(id);
+					if(user != null) {
+						AddUserSocket(ws, user);
 					}
 					else {
 						ws.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
@@ -116,12 +127,11 @@ namespace DT.Controllers {
 					userSignin(ws, user);
 				}
 				else {
-					string returnMessage = JsonConvert.SerializeObject(new {
+					LockRemoveList.Add(ws);
+					SendToOne(new {
 						status = 0,
 						errorInfo = "您被迫下线，该帐号在其他地方登陆！"
-					});
-					LockRemoveList.Add(ws);
-					SendToOne(returnMessage, ws);
+					}, ws);
 					ws.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
 					userSocketMap[ws] = user;
 				}
@@ -132,8 +142,9 @@ namespace DT.Controllers {
 		}
 
 
-		private static void SendToOne(string json, WebSocket ws) {
+		private static void SendToOne(object jsonObj, WebSocket ws) {
 			try {
+				string json = JsonConvert.SerializeObject(jsonObj);
 				ArraySegment<byte> buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(json));
 				ws.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
 			}
@@ -141,15 +152,15 @@ namespace DT.Controllers {
 				LogRecorder.Record(e.Message);
 			}
 		}
-		private static void SendToAll(string json) {
+		private static void SendToAll(object jsonObj) {
 			foreach(WebSocket ws in userSocketMap.Keys) {
-				SendToOne(json, ws);
+				SendToOne(jsonObj, ws);
 			}
 		}
-		private static void SendToAll(string json, WebSocket exceptWs) {
+		private static void SendToAll(object jsonObj, WebSocket exceptWs) {
 			foreach(WebSocket ws in userSocketMap.Keys) {
 				if(ws != exceptWs) {
-					SendToOne(json, ws);
+					SendToOne(jsonObj, ws);
 				}
 			}
 		}
@@ -158,16 +169,14 @@ namespace DT.Controllers {
 			ApplicationUser[] userArr = userSocketMap.Values.ToArray<ApplicationUser>();
 			userArr.OrderBy(t => t.Id);
 			ProtUserList ul = new ProtUserList(userArr);
-			string json = JsonConvert.SerializeObject(ul);
-			SendToOne(json, ws);
+			SendToOne(ul, ws);
 			//给除了当前登录用户以外的所有用户发送登录信息
 			ProtUserSignin us = new ProtUserSignin() {
 				id = user.Id,
 				name = user.UserName,
 				email = user.Email
 			};
-			json = JsonConvert.SerializeObject(us);
-			SendToAll(json, ws);
+			SendToAll(us, ws);
 		}
 		private static void userSignout(WebSocket ws, ApplicationUser user) {
 			ProtUserSignout us = new ProtUserSignout() {
@@ -175,13 +184,12 @@ namespace DT.Controllers {
 				name = user.UserName,
 				email = user.Email
 			};
-			string json = JsonConvert.SerializeObject(us);
-			SendToAll(json, ws);
+			SendToAll(us, ws);
 		}
 
 		public static void Init() {
 			DTcoreController.WebSocketMsgReceived += DTcoreController_WebSocketMsgReceived;
-			
+
 			timer.Elapsed += (object sender, ElapsedEventArgs e) => {
 				try {
 					if(userSocketMap.Count != 0 && LockRemoveList.Count == 0) {

@@ -6,6 +6,7 @@ using Microsoft.Owin.Security;
 using DT.Models;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 
 namespace DT {
 	public class ApplicationUserManager : UserManager<ApplicationUser> {
@@ -27,6 +28,15 @@ namespace DT {
 					return true;
 			}
 			return false;
+		}
+		public override async System.Threading.Tasks.Task<IdentityResult> CreateAsync(ApplicationUser user) {
+			var result = await base.CreateAsync(user);
+			ApplicationDbContext db = new ApplicationDbContext();
+			db.Canvases.Add(new CanvasModels {
+				UserId = user.Id
+			});
+			db.SaveChanges();
+			return result;
 		}
 	}
 	public class ApplicationSignInManager : SignInManager<ApplicationUser, string> {

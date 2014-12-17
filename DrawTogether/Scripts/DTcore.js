@@ -113,12 +113,12 @@
 			stage.addEventListener("stagemouseup", handleMouseUp);
 			stage.addChild(shape);
 			stage.update();
-			// setInterval(function() {
-			// 	$.websocket({
-			// 		type: ProtJsonType.ImgBinary,
-			// 		imgBinary: stage.toDataURL()
-			// 	});
-			// }, 2000);
+			setInterval(function() {
+				$.websocket({
+					type: ProtJsonType.ImgBinary,
+					imgBinary: stage.toDataURL()
+				});
+			}, 5000);
 			var oldPt, oldMidPt;
 
 			function handleMouseDown() {
