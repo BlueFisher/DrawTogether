@@ -190,7 +190,7 @@
 		//初始化
 		$container = $('.canvas-container');
 		UserCanvasManager.Initalize();
-		// initWebSocket();
+		initWebSocket();
 	});
 
 	var maxWidth = 0,

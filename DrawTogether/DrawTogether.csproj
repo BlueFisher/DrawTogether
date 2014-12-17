@@ -166,6 +166,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AccountViewModel.cs" />
+    <Compile Include="Models\CanvasModels.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\MessageProtocol.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

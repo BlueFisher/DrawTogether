@@ -29,6 +29,9 @@ namespace DT.Controllers {
 			}
 			else {
 				user = UserManager.FindByName(User.Identity.Name);
+				if(user == null) {
+					return RedirectToAction("SignOut", "Account");
+				}
 			}
 			ViewBag.UserName = user.UserName;
 			ViewBag.UserId = user.Id;

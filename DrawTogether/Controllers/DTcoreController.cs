@@ -1,7 +1,9 @@
-﻿using DT.Models;
+﻿using DT.App_Code;
+using DT.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -9,12 +11,10 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Web;
 using System.Web.Http;
 using System.Web.WebSockets;
-using System.Diagnostics;
-using System.Timers;
-using DT.App_Code;
 
 namespace DT.Controllers {
 	public delegate void WebSocketMsgReceivedEventHandler(string json, WebSocket ws);
@@ -47,23 +47,23 @@ namespace DT.Controllers {
 						}
 					}
 					else {
-						//if(!WebSocketMessageManage.LockRemoveList.Contains(socket))
-						//	WebSocketMessageManage.RemoveSocket(socket);
-						//else
-						//	WebSocketMessageManage.LockRemoveList.Remove(socket);
-						//break;
+						if(!WebSocketMessageManager.LockRemoveList.Contains(socket))
+							WebSocketMessageManager.RemoveSocket(socket);
+						else
+							WebSocketMessageManager.LockRemoveList.Remove(socket);
+						break;
 					}
 				}
 			}
 			catch(Exception e) {
-				//WebSocketMessageManage.RemoveSocket(socket);
+				WebSocketMessageManager.RemoveSocket(socket);
 				LogRecorder.Record(e.Message);
 			}
 		}
 	}
 
-	/*public static class WebSocketMessageManage {
-		private static UsersDBContext db = new UsersDBContext();
+	public static class WebSocketMessageManager {
+		private static ApplicationDbContext db = new ApplicationDbContext();
 		private static Dictionary<WebSocket, ApplicationUser> userSocketMap = new Dictionary<WebSocket, ApplicationUser>();
 		public static List<WebSocket> LockRemoveList = new List<WebSocket>();
 		private static System.Timers.Timer timer = new System.Timers.Timer(1000);
@@ -95,7 +95,7 @@ namespace DT.Controllers {
 				case ProtJsonType.Signin:
 					string id = JsonConvert.DeserializeObject<ProtUserSignin>(json).id;
 					List<ApplicationUser> list = (
-						from p in db
+						from p in db.Users
 						where p.Id == id
 						select p
 					).ToList();
@@ -110,19 +110,24 @@ namespace DT.Controllers {
 		}
 
 		private static void AddUserSocket(WebSocket ws, ApplicationUser user) {
-			if(!userSocketMap.Values.Contains(user)) {
-				userSocketMap.Add(ws, user);
-				userSignin(ws, user);
+			try {
+				if(!userSocketMap.Values.Contains(user)) {
+					userSocketMap.Add(ws, user);
+					userSignin(ws, user);
+				}
+				else {
+					string returnMessage = JsonConvert.SerializeObject(new {
+						status = 0,
+						errorInfo = "您被迫下线，该帐号在其他地方登陆！"
+					});
+					LockRemoveList.Add(ws);
+					SendToOne(returnMessage, ws);
+					ws.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
+					userSocketMap[ws] = user;
+				}
 			}
-			else {
-				string returnMessage = JsonConvert.SerializeObject(new {
-					status = 0,
-					errorInfo = "您被迫下线，该帐号在其他地方登陆！"
-				});
-				LockRemoveList.Add(ws);
-				SendToOne(returnMessage, ws);
-				ws.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
-				userSocketMap[ws] = user;
+			catch(Exception e) {
+				Debug.WriteLine(e);
 			}
 		}
 
@@ -193,5 +198,5 @@ namespace DT.Controllers {
 			userSignout(ws, userSocketMap[ws]);
 			userSocketMap.Remove(ws);
 		}
-	}*/
+	}
 }
