@@ -79,8 +79,17 @@
 			})
 			return returnUser;
 		},
+		MouseDownReceived: function(json){
+			var user = this._findUser(json);
+			var ctx = user.context;
+			ctx.beginPath()
+			ctx.fillStyle = json.penProperty.color;
+			ctx.arc(json.oldPt.x, json.oldPt.y, json.penProperty.thickness / 2, 0, Math.PI * 2);
+			ctx.closePath();
+			ctx.fill();
+		},
 		//关于鼠标信息接受时触发
-		MouseInfoReceived: function(json) {
+		MouseMoveReceived: function(json) {
 			var user = this._findUser(json);
 			var midPt = json.midPt;
 			var oldPt = json.oldPt;
@@ -127,6 +136,11 @@
 			function handleMouseDown(e) {
 				oldPt = new Point(e.x, e.y);
 				oldMidPt = oldPt;
+				ctx.beginPath()
+				ctx.fillStyle = penProperty.color;
+				ctx.arc(e.x, e.y, penProperty.thickness / 2, 0, Math.PI * 2);
+				ctx.closePath();
+				ctx.fill();
 				$(canvas).on('mousemove', function(event) {
 					handleMouseMove(new Point(event.pageX - $(canvas).offset().left,
 						event.pageY - $(canvas).offset().top))
@@ -135,7 +149,8 @@
 					type: ProtJsonType.MouseDown,
 					oldPt: oldPt,
 					oldMidPt: oldMidPt,
-				});
+					penProperty: penProperty
+				})
 			}
 
 			function handleMouseMove(e) {
@@ -206,8 +221,12 @@
 				switch (json.type) {
 					case ProtJsonType.Error:
 						$.alert(json.errorInfo);
+						break;
+					case ProtJsonType.MouseDown:
+						UserCanvasManager.MouseDownReceived(json);
+						break;
 					case ProtJsonType.MouseMove:
-						UserCanvasManager.MouseInfoReceived(json);
+						UserCanvasManager.MouseMoveReceived(json);
 						break;
 					case ProtJsonType.ImgBinary:
 						UserCanvasManager.ImgBinaryReceived(json);
@@ -271,5 +290,4 @@
 		UserCanvasManager.Initalize();
 		initWebSocket();
 	});
-
 })();
