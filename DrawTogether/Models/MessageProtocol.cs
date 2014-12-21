@@ -14,13 +14,16 @@ namespace DT.Models {
 		public ProtJsonType type { get; set; }
 	}
 	public enum ProtJsonType {
-		MouseUp = -1,
-		MouseDown = 0,
-		MouseMove = 1,
-		ImgBinary = 2,
-		UserList = 3,
-		Signin = 4,
-		Signout = 5
+		MouseUp = 0,
+		MouseDown = 1,
+		MouseMove = 2,
+		ImgBinary = 3,
+		RequestImgBinary = 4,
+		UserList = 5,
+		Signin = 6,
+		SigninSucceed = 7,
+		Signout = 8,
+		Error = 9
 	}
 	public class ProtJsonTypeCheck {
 		public ProtJsonType type { get; set; }
@@ -75,5 +78,16 @@ namespace DT.Models {
 		public ProtImgBinary()
 			: base(ProtJsonType.ImgBinary) { }
 		public string imgBinary { get; set; }
+	}
+	public class ProtRequestImgBinary : ProtBase {
+		public ProtRequestImgBinary()
+			: base(ProtJsonType.RequestImgBinary) { }
+	}
+	public class ProtError : ProtBase {
+		public ProtError(string err)
+			: base(ProtJsonType.Error) {
+			this.errorInfo = err;
+		}
+		public string errorInfo { get; set; }
 	}
 }

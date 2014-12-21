@@ -64,7 +64,6 @@ namespace DT.Controllers {
 	}
 
 	public static class WebSocketMessageManager {
-		private static ApplicationDbContext db = new ApplicationDbContext();
 		/// <summary>
 		/// 用户与WebSocket键值对
 		/// </summary>
@@ -73,71 +72,77 @@ namespace DT.Controllers {
 		/// 被锁定无法移除的用户列表
 		/// </summary>
 		public static List<WebSocket> LockRemoveList = new List<WebSocket>();
-		private static System.Timers.Timer timer = new System.Timers.Timer(1000);
-
 
 		private static void DTcoreController_WebSocketMsgReceived(string json, WebSocket ws) {
-			ApplicationUser tUser = null;
+
+			ApplicationDbContext db = new ApplicationDbContext();
+			ApplicationUser currentUser = null;
 			if(userSocketMap.Keys.Contains<WebSocket>(ws)) {
-				tUser = userSocketMap[ws];
+				currentUser = userSocketMap[ws];
 			}
 			ProtJsonType type = JsonConvert.DeserializeObject<ProtJsonTypeCheck>(json).type;
-			switch(type) {
-				case ProtJsonType.MouseDown:
-				case ProtJsonType.MouseUp:
-				case ProtJsonType.MouseMove:
-					ProtMouseMove tMouserMove = JsonConvert.DeserializeObject<ProtMouseMove>(json);
-					tMouserMove.id = tUser.Id;
-					tMouserMove.name = tUser.UserName;
-					SendToAll(tMouserMove, ws);
-					break;
-				case ProtJsonType.ImgBinary:
-					ProtImgBinary tImgBinary = JsonConvert.DeserializeObject<ProtImgBinary>(json);
-
-					CanvasModels cm = new CanvasModels {
-						UserId = tUser.Id,
-						ImgBinary = tImgBinary.imgBinary
-					};
-					var tEntry = db.Entry(cm);
-					tEntry.State = EntityState.Modified;
-					db.SaveChanges();
-					tEntry.State = EntityState.Detached;
-
-					tImgBinary.id = tUser.Id;
-					tImgBinary.name = tUser.UserName;
-					SendToAll(tImgBinary, ws);
-					break;
-				case ProtJsonType.Signin:
-					string id = JsonConvert.DeserializeObject<ProtUserSignin>(json).id;
-					ApplicationUser user = db.Users.Find(id);
-					if(user != null) {
-						AddUserSocket(ws, user);
-					}
-					else {
-						ws.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
-					}
-					break;
-			}
-		}
-
-		private static void AddUserSocket(WebSocket ws, ApplicationUser user) {
+			Debug.WriteLine(Enum.GetName(typeof(ProtJsonType), type));
 			try {
-				if(!userSocketMap.Values.Contains(user)) {
-					userSocketMap.Add(ws, user);
-					userSignin(ws, user);
-				}
-				else {
-					LockRemoveList.Add(ws);
-					SendToOne(new {
-						status = 0,
-						errorInfo = "您被迫下线，该帐号在其他地方登陆！"
-					}, ws);
-					ws.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
-					userSocketMap[ws] = user;
+				switch(type) {
+					case ProtJsonType.MouseDown:
+					case ProtJsonType.MouseUp:
+					case ProtJsonType.MouseMove:
+						ProtMouseMove tMouserMove = JsonConvert.DeserializeObject<ProtMouseMove>(json);
+						tMouserMove.id = currentUser.Id;
+						tMouserMove.name = currentUser.UserName;
+						SendToAll(tMouserMove, ws);
+						break;
+					case ProtJsonType.ImgBinary:
+						ProtImgBinary tImgBinary = JsonConvert.DeserializeObject<ProtImgBinary>(json);
+						tImgBinary.id = currentUser.Id;
+						tImgBinary.name = currentUser.UserName;
+						CanvasModels newCanvasModel = new CanvasModels() {
+							UserId = tImgBinary.id,
+							ImgBinary = tImgBinary.imgBinary
+						};
+						db.Set<CanvasModels>().Attach(newCanvasModel);
+						db.Entry(newCanvasModel).State = EntityState.Modified;
+						db.SaveChanges();
+
+						SendToAll(tImgBinary, ws);
+						break;
+					case ProtJsonType.Signin:
+						string id = JsonConvert.DeserializeObject<ProtUserSignin>(json).id;
+						ApplicationUser user = db.Users.Find(id);
+						ProtImgBinary imgBinary = new ProtImgBinary() {
+							id = user.Id,
+							name = user.UserName,
+							imgBinary = db.Canvases.Find(id).ImgBinary
+						};
+
+						if(user != null) {
+							AddUserSocket(ws, user);
+							SendToAll(imgBinary);
+							SendToAll(new ProtRequestImgBinary(), ws);
+						}
+						else {
+							ws.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
+						}
+						break;
 				}
 			}
 			catch(Exception e) {
 				Debug.WriteLine(e);
+				LogRecorder.Record(e.Message);
+			}
+
+		}
+
+		private static void AddUserSocket(WebSocket ws, ApplicationUser user) {
+			if(!userSocketMap.Values.Contains(user)) {
+				userSocketMap.Add(ws, user);
+				userSignin(ws, user);
+			}
+			else {
+				LockRemoveList.Add(ws);
+				SendToOne(new ProtError("您被迫下线，该帐号在其他地方登陆！"), ws);
+				ws.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
+				userSocketMap[ws] = user;
 			}
 		}
 
@@ -189,18 +194,6 @@ namespace DT.Controllers {
 
 		public static void Init() {
 			DTcoreController.WebSocketMsgReceived += DTcoreController_WebSocketMsgReceived;
-
-			timer.Elapsed += (object sender, ElapsedEventArgs e) => {
-				try {
-					if(userSocketMap.Count != 0 && LockRemoveList.Count == 0) {
-						foreach(KeyValuePair<WebSocket, ApplicationUser> item in userSocketMap) {
-							Debug.WriteLine(item.Value.UserName + " : " + item.Key.GetHashCode());
-						}
-					}
-				}
-				catch { }
-			};
-			//timer.Start();
 		}
 		public static void RemoveSocket(WebSocket ws) {
 			userSignout(ws, userSocketMap[ws]);

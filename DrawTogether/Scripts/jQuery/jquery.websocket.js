@@ -1,14 +1,14 @@
 (function($) {
 	var socket;
-	$.websocket = function(options, callback) {
+	$.websocket = function(options, onMethods) {
 		if ($.isPlainObject(options)) {
-			if (socket.readyState == WebSocket.OPEN) {
-				socket.send(JSON.stringify(options));
+			if (socket == null || socket.readyState != WebSocket.OPEN) {
+				// $.alert({
+				// 	content: '发送失败: ',
+				// 	style: 'danger'
+				// });
 			} else {
-				$.alert({
-					content: '发送失败: ',
-					style: 'danger'
-				});
+				socket.send(JSON.stringify(options));
 			}
 		} else {
 			socket = new WebSocket('ws://' + location.host + '/api/DTcore');
@@ -17,11 +17,7 @@
 					content: '连接成功',
 					style: 'success'
 				});
-				//发送登录信息
-				$.websocket({
-					type: 4,
-					id: $('#userInfo').attr('data-userid')
-				});
+				onMethods.onOpen();
 			}
 			var str = "";
 			socket.onmessage = function(event) {
@@ -29,7 +25,7 @@
 				var lastChar = srcStr.substr(srcStr.length - 1, 1);
 				str += srcStr;
 				if (lastChar == '}') {
-					callback($.parseJSON(str));
+					onMethods.onMessage($.parseJSON(str));
 					str = "";
 				}
 			}
@@ -38,6 +34,7 @@
 					content: '连接关闭',
 					style: 'danger'
 				});
+				onMethods.onClose();
 			}
 			socket.onerror = function(event) {
 				$.alert({
@@ -45,6 +42,7 @@
 					content: event.data,
 					style: 'danger'
 				});
+				onMethods.onError();
 			}
 		}
 	}

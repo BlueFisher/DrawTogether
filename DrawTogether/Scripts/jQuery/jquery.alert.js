@@ -7,18 +7,18 @@
 
 $(document).ready(function() {
 	$('body').append($('<div class="alert-container">').css({
-			position: 'fixed',
-			right: 0,
-			top: 0,
-			zIndex: 999999,
-			margin: '20px',
-			width: '500px'
-		})
-	);
+		position: 'fixed',
+		right: 0,
+		top: 0,
+		zIndex: 999999,
+		margin: '20px',
+		width: '300px'
+	}));
 });
 $.alert = function(options, style) {
+
 	var alertOptions = {
-		title: '提示！',
+		title: '',
 		content: '',
 		type: "alert",
 		style: "warning",
@@ -35,34 +35,36 @@ $.alert = function(options, style) {
 	}
 	alertOptions = $.extend(alertOptions, options);
 
-	var $alert = $('<div>').addClass('alert alert-' + alertOptions.style + ' fade in');
-	$alert.append('<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>');
-	$alert.append('<p><strong>' + alertOptions.title + '</strong> ' + alertOptions.content + '</p>');
+	var $alert = $('<div>').addClass('alert alert-' + alertOptions.style + ' animated flipInX');
+	$alert.close = function() {
+		$alert.addClass('flipOutX');
+		setTimeout(function() {
+			$alert.remove();
+		}, 1000);
+	};
+
+	$alert.append('<button class="close">&times;</button>')
+		.append('<p><strong>' + alertOptions.title + '</strong> ' + alertOptions.content + '</p>');
 	if (alertOptions.type == "confirm") {
-		$alert.append('<p><button class="btn btn-danger btn-sm">确定</button> <button class="btn btn-default btn-sm">取消</button></p>');
-		$alert.find('.btn-danger').click(function() {
-			$alert.alert('close');
+		$alert.append('<hr>')
+			.append('<button id="alertYes" class="btn btn-danger">确 定</button> ')
+			.append('<button id="alertNo" class="btn btn-default">取 消</button>')
+		$alert.find('#alertYes').click(function() {
+			$alert.close()
 			alertOptions.callback(true);
 		});
-		$alert.find('.btn-default').click(function() {
-			$alert.alert('close');
+		$alert.find('#alertNo').click(function() {
+			$alert.close()
 			alertOptions.callback(false);
 		});
 	}
+	$alert.find('button.close').click(function() {
+		$alert.close();
+	});
 	$('.alert-container').append($alert);
-	var timeout = setTimeout(function() {
-		$alert.alert('close');
-		clearTimeout(timeout);
-	}, alertOptions.cleartime);
-
-	$alert.mouseover(function(event) {
-		clearTimeout(timeout);
-	});
-
-	$alert.mouseout(function(event) {
-		timeout = setTimeout(function() {
-			$alert.alert('close');
-			clearTimeout(timeout);
+	if (alertOptions.cleartime != 'infinity' && alertOptions.type != 'confirm') {
+		setTimeout(function() {
+			$alert.close()
 		}, alertOptions.cleartime);
-	});
+	}
 }
