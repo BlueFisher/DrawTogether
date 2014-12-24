@@ -48,10 +48,7 @@ namespace DT.Controllers {
 						}
 					}
 					else {
-						if(!WebSocketMessageManager.LockRemoveList.Contains(socket))
-							 WebSocketMessageManager.RemoveSocket(socket);
-						else
-							WebSocketMessageManager.LockRemoveList.Remove(socket);
+						WebSocketMessageManager.RemoveSocket(socket);
 						break;
 					}
 				}
@@ -68,10 +65,6 @@ namespace DT.Controllers {
 		/// 用户与WebSocket键值对
 		/// </summary>
 		private static Dictionary<WebSocket, ApplicationUser> userSocketMap = new Dictionary<WebSocket, ApplicationUser>();
-		/// <summary>
-		/// 被锁定无法移除的用户列表
-		/// </summary>
-		public static List<WebSocket> LockRemoveList = new List<WebSocket>();
 
 		private static void DTcoreController_WebSocketMsgReceived(string json, WebSocket ws) {
 
@@ -132,16 +125,16 @@ namespace DT.Controllers {
 		}
 
 		private static void AddUserSocket(WebSocket ws, ApplicationUser user) {
-			if(!userSocketMap.Values.Contains(user)) {
+			var recurringUserPairList = (from p in userSocketMap where p.Value.Id == user.Id select p).ToList();
+			if(recurringUserPairList.Count == 0) {
 				userSocketMap.Add(ws, user);
 				userSignin(ws, user);
 			}
 			else {
-				var failureWsUserPair = (from p in userSocketMap where p.Value == user select p).ToList()[0];
-				//LockRemoveList.Add(ws);
-				SendToOne(new ProtError("您被迫下线，该帐号在其他地方登陆！"), failureWsUserPair.Key);
-				failureWsUserPair.Key.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
-				userSocketMap.Remove(failureWsUserPair.Key);
+				var recrringUserPair = recurringUserPairList[0];
+				SendToOne(new ProtError("您被迫下线，该帐号在其他地方登陆！"), recrringUserPair.Key);
+				recrringUserPair.Key.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
+				userSocketMap.Remove(recrringUserPair.Key);
 				userSocketMap.Add(ws, user);
 			}
 		}
@@ -196,8 +189,10 @@ namespace DT.Controllers {
 			DTcoreController.WebSocketMsgReceived += DTcoreController_WebSocketMsgReceived;
 		}
 		public static void RemoveSocket(WebSocket ws) {
-			userSignout(ws, userSocketMap[ws]);
-			userSocketMap.Remove(ws);
+			if(userSocketMap.Keys.Contains(ws)) {
+				userSignout(ws, userSocketMap[ws]);
+				userSocketMap.Remove(ws);
+			}
 		}
 	}
 }

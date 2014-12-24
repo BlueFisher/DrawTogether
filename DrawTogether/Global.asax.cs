@@ -9,13 +9,19 @@ using System.Web.Routing;
 using System.Web.SessionState;
 using System.Web.Security;
 using DT.Controllers;
+using System.Diagnostics;
 
 namespace DT {
 	public class MvcApplication : System.Web.HttpApplication {
 		protected void Application_Start() {
-			WebSocketMessageManager.Init();
-			GlobalConfiguration.Configure(WebApiConfig.Register);
-			RouteConfig.RegisterRoutes(RouteTable.Routes);
+			try {
+				WebSocketMessageManager.Init();
+				GlobalConfiguration.Configure(WebApiConfig.Register);
+				RouteConfig.RegisterRoutes(RouteTable.Routes);
+			}
+			catch(Exception e) {
+				Debug.WriteLine(e);
+			}
 		}
 	}
 }
