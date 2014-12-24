@@ -14,8 +14,8 @@
 	};
 	//笔触样式
 	var penProperty = {
-		color: 'black',
-		thickness: 5,
+		color: '#000000',
+		thickness: 1,
 	};
 	//坐标类
 	var Point = function(x, y) {
@@ -57,7 +57,7 @@
 					UserCanvasManager._users.splice(i, 1);
 					$(UserCanvasManager.User.canvas).prev('[data-userid="' + user.id + '"]').remove();
 				}
-			})
+			});
 		},
 		//遍历_users集合
 		Traverse: function(fun) {
@@ -76,13 +76,13 @@
 					returnUser = user;
 					return;
 				}
-			})
+			});
 			return returnUser;
 		},
-		MouseDownReceived: function(json){
+		MouseDownReceived: function(json) {
 			var user = this._findUser(json);
 			var ctx = user.context;
-			ctx.beginPath()
+			ctx.beginPath();
 			ctx.fillStyle = json.penProperty.color;
 			ctx.arc(json.oldPt.x, json.oldPt.y, json.penProperty.thickness / 2, 0, Math.PI * 2);
 			ctx.closePath();
@@ -128,9 +128,8 @@
 
 			$(canvas).on('mousedown', function(event) {
 				handleMouseDown(new Point(event.pageX - $(canvas).offset().left,
-					event.pageY - $(canvas).offset().top))
+					event.pageY - $(canvas).offset().top));
 			});
-			$(document).on('mouseup', handleMouseUp);
 			var oldPt, oldMidPt;
 
 			function handleMouseDown(e) {
@@ -143,14 +142,14 @@
 				ctx.fill();
 				$(canvas).on('mousemove', function(event) {
 					handleMouseMove(new Point(event.pageX - $(canvas).offset().left,
-						event.pageY - $(canvas).offset().top))
+						event.pageY - $(canvas).offset().top));
 				});
+				$(document).one('mouseup', handleMouseUp);
 				$.websocket({
 					type: ProtJsonType.MouseDown,
 					oldPt: oldPt,
-					oldMidPt: oldMidPt,
 					penProperty: penProperty
-				})
+				});
 			}
 
 			function handleMouseMove(e) {
@@ -170,7 +169,7 @@
 					oldPt: oldPt,
 					oldMidPt: oldMidPt,
 					penProperty: penProperty
-				})
+				});
 
 				oldPt.x = e.x;
 				oldPt.y = e.y;
@@ -188,11 +187,16 @@
 			$('#clearShape').click(function(event) {
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 			});
-			$('.pen-color').click(function() {
-				$('.pen-color').removeClass('active');
-				$(this).toggleClass('active');
-				penProperty.color = $(this).attr('data-property');
+			$('#colorPicker').colpick({
+				color: '000000',
+				submitText: '取色',
+				onSubmit: function(hsb, hex, rgb, el) {
+					$(el).find('span').css('background-color', '#' + hex);
+					$(el).colpickHide();
+					penProperty.color = '#' + hex;
+				}
 			});
+
 			$('.pen-thickness').click(function() {
 				$('.pen-thickness').removeClass('active');
 				$(this).toggleClass('active');
@@ -204,6 +208,12 @@
 					imgBinary: canvas.toDataURL()
 				});
 			});
+			$('#thicknessPicker').scrollbar({
+				onChange: function(val) {
+					penProperty.thickness = val;
+				}
+			});
+
 		}
 	}
 
@@ -218,9 +228,13 @@
 		var $userList = $('.slide-user-list .list-group');
 		$.websocket('connect', {
 			onMessage: function(json) {
+				console.log(json);
 				switch (json.type) {
 					case ProtJsonType.Error:
-						$.alert(json.errorInfo);
+						$.alert({
+							content: json.errorInfo,
+							type: 'danger'
+						});
 						break;
 					case ProtJsonType.MouseDown:
 						UserCanvasManager.MouseDownReceived(json);

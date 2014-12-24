@@ -49,7 +49,7 @@ namespace DT.Controllers {
 					}
 					else {
 						if(!WebSocketMessageManager.LockRemoveList.Contains(socket))
-							WebSocketMessageManager.RemoveSocket(socket);
+							 WebSocketMessageManager.RemoveSocket(socket);
 						else
 							WebSocketMessageManager.LockRemoveList.Remove(socket);
 						break;
@@ -58,7 +58,7 @@ namespace DT.Controllers {
 			}
 			catch(Exception e) {
 				WebSocketMessageManager.RemoveSocket(socket);
-				LogRecorder.Record(e.Message);
+				Debug.WriteLine(e);
 			}
 		}
 	}
@@ -77,7 +77,7 @@ namespace DT.Controllers {
 
 			ApplicationDbContext db = new ApplicationDbContext();
 			ApplicationUser currentUser = null;
-			if(userSocketMap.Keys.Contains<WebSocket>(ws)) {
+			if(userSocketMap.Keys.Contains(ws)) {
 				currentUser = userSocketMap[ws];
 			}
 			ProtJsonType type = JsonConvert.DeserializeObject<ProtJsonTypeCheck>(json).type;
@@ -128,9 +128,7 @@ namespace DT.Controllers {
 			}
 			catch(Exception e) {
 				Debug.WriteLine(e);
-				LogRecorder.Record(e.Message);
 			}
-
 		}
 
 		private static void AddUserSocket(WebSocket ws, ApplicationUser user) {
@@ -139,10 +137,12 @@ namespace DT.Controllers {
 				userSignin(ws, user);
 			}
 			else {
-				LockRemoveList.Add(ws);
-				SendToOne(new ProtError("您被迫下线，该帐号在其他地方登陆！"), ws);
-				ws.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
-				userSocketMap[ws] = user;
+				var failureWsUserPair = (from p in userSocketMap where p.Value == user select p).ToList()[0];
+				//LockRemoveList.Add(ws);
+				SendToOne(new ProtError("您被迫下线，该帐号在其他地方登陆！"), failureWsUserPair.Key);
+				failureWsUserPair.Key.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, String.Empty, CancellationToken.None);
+				userSocketMap.Remove(failureWsUserPair.Key);
+				userSocketMap.Add(ws, user);
 			}
 		}
 
@@ -154,7 +154,7 @@ namespace DT.Controllers {
 				ws.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
 			}
 			catch(Exception e) {
-				LogRecorder.Record(e.Message);
+				Debug.WriteLine(e);
 			}
 		}
 		private static void SendToAll(object jsonObj) {

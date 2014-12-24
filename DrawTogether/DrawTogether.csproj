@@ -138,21 +138,23 @@
     <Content Include="Content\css\animate.min.css" />
     <Content Include="Content\css\bootstrap-theme.min.css" />
     <Content Include="Content\css\bootstrap.min.css" />
+    <Content Include="Content\css\DTcore.css" />
     <Content Include="Content\css\font-awesome.min.css" />
     <Content Include="Content\css\global.css" />
     <Content Include="Content\css\signin.css" />
-    <Content Include="Content\css\window.css" />
+    <Content Include="Content\css\tools\colpick.css" />
     <Content Include="Content\fonts\fontawesome-webfont.svg" />
     <Content Include="Content\image\background.jpg" />
     <Content Include="Content\image\DTlogo.png" />
     <Content Include="Content\image\Logo.png" />
     <Content Include="Scripts\DTcore.js" />
-    <Content Include="Scripts\easeljs-min.js" />
+    <Content Include="Scripts\jQuery\colpick.js" />
     <Content Include="Scripts\jQuery\jquery.alert.js" />
     <Content Include="Scripts\jQuery\bootstrap.min.js" />
     <Content Include="Scripts\jQuery\jquery-2.1.1.min.js" />
     <Content Include="Scripts\jQuery\jquery.cookie.min.js" />
     <Content Include="Scripts\jQuery\jquery.websocket.js" />
+    <Content Include="Scripts\jQuery\scrollbar.js" />
     <Content Include="Scripts\signin.js" />
     <Content Include="Global.asax" />
     <Content Include="Web.config">
@@ -161,7 +163,6 @@
     <Content Include="Views\Home\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App_Code\LogRecorder.cs" />
     <Compile Include="App_Code\Utility.cs" />
     <Compile Include="App_Start\IdentityConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
