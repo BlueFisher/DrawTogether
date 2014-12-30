@@ -12,7 +12,7 @@ Layout = null;
 		<script type="text/javascript" src="~/Scripts/jQuery/jquery.alert.js"></script>
 		<script type="text/javascript" src="~/Scripts/jQuery/jquery.websocket.js"></script>
 		<script type="text/javascript" src="~/Scripts/jQuery/colpick.js" ></script>
-		<script type="text/javascript" src="~/Scripts/jQuery/scrollbar.js" ></script>
+		<!--<script type="text/javascript" src="~/Scripts/jQuery/scrollbar.js" ></script>-->
 		<script type="text/javascript" src="~/Scripts/DTcore.js"></script>
 		
 		<link rel="stylesheet" href="~/content/css/bootstrap.min.css">
@@ -21,6 +21,7 @@ Layout = null;
 		<link rel="stylesheet" href="~/content/css/global.css">
 		<link rel="stylesheet" href="~/content/css/DTcore.css">
 		<link rel="stylesheet" href="~/content/css/tools/colpick.css">
+		<link rel="stylesheet" href="~/content/css/tools/animate.min.css">
 	</head>
 	<body>
 		<div class="slide-menu">
@@ -29,24 +30,6 @@ Layout = null;
 			</div>
 
 			<div class="slide-menu-list">
-				<div class="form-group">
-					<div id="colorPicker">
-						<span class="color-picker-backward"></span>
-						<span class="color-picker-forward"></span>
-					</div>
-				</div>
-				<div class="form-group align-center">
-					<div id="thicknessPicker" class="progress-vertical">
-						<div class="progress-vertical-bar"></div>
-						<a href="javascript:;" class="progress-vertical-handler"></a>
-					</div>
-					
-					<!-- <div class="btn-group-vertical">
-						<button type="button" class="btn btn-default pen-thickness" data-property="10">粗</button>
-						<button type="button" class="btn btn-default pen-thickness active" data-property="5">中</button>
-						<button type="button" class="btn btn-default pen-thickness" data-property="1">细</button>
-					</div> -->
-				</div>
 				<div class="form-group">
 					<div class="btn-group-vertical">
 						<button type="button" class="btn btn-default" id="clearShape">清除</button>
@@ -61,6 +44,27 @@ Layout = null;
 		<div class="canvas-container">
 			<canvas id="canvas"></canvas>
 		</div>
+		<div class="toolbar">
+			<ul class="toolbar-group">
+				<li>
+					<div class="btn-group">
+						<button class="btn btn-default active" id="statusDraw"><span class="fa fa-pencil fa-fw"></span></button>
+						<button class="btn btn-default" id="statusErase"><span class="fa fa-eraser fa-fw"></span></button>
+					</div>
+				</li>
+				<li>
+					<a href="javascript:;" id="colorPicker"><span></span></a>
+				</li>
+				<li>
+					<div class="btn-group toolbar-thickness-group">
+						<button class="btn btn-default btn-thickness active" data-thickness="2"><span></span></button>
+						<button class="btn btn-default btn-thickness" data-thickness="5"><span></span></button>
+						<button class="btn btn-default btn-thickness" data-thickness="10"><span></span></button>
+					</div>
+				</li>
+			</ul>
+		</div>
+		
 		<div class="slide-user-list">
 			<div class="list-group">
 				<a class="list-group-item active"><span class="fa fa-list"></span> 用户列表</a>

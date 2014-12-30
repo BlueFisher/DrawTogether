@@ -1,5 +1,4 @@
-﻿using DT.App_Code;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -12,6 +11,8 @@ namespace DT.Models {
 
 		[Required(ErrorMessage = "密码不能为空")]
 		public string Password { get; set; }
+		[Required(ErrorMessage = "验证码不能为空")]
+		public string ValidateCode { get; set; }
 		public bool RememberMe { get; set; }
 	}
 	public class SignUpModel {

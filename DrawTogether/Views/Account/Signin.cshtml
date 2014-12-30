@@ -17,6 +17,7 @@
 	<link rel="stylesheet" href="~/Content/css/font-awesome.min.css">
 	<link rel="stylesheet" href="~/Content/css/global.css">
 	<link rel="stylesheet" href="~/Content/css/signin.css">
+	<link rel="stylesheet" href="~/content/css/tools/animate.min.css">
 </head>
 <body>
 	<div class="container-fluid">
@@ -41,6 +42,15 @@
 						<div class="input-group">
 							<div class="input-group-addon"><span class="fa fa-key fa-fw"></span></div>
 							<input class="form-control" id="signinPwd" name="password" type="password" placeholder="输入密码">
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="input-group">
+							<div class="input-group-addon"><span class="fa fa-pencil fa-fw"></span></div>
+							<input class="form-control" id="signinValidateCode" name="validatecode" type="text" placeholder="输入验证码">
+							<div class="input-group-addon validatecode">
+								<a href="javascript:;" id="changeValidateCode"><img src="/Account/GetValidateCode" height="22" alt="验证码"></a>
+							</div>
 						</div>
 					</div>
 					<div class="checkbox">
@@ -96,7 +106,7 @@
 		
 	</div>
 	<div class="footer">
-		Copyright © 2014 <a href="#">Fisher Chang</a>
+		Copyright © 2014 <a href="https://github.com/BlueFisher/" target="_blank">Fisher Chang</a>
 	</div>
 </body>
 </html>

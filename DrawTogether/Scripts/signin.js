@@ -1,9 +1,14 @@
 $(document).ready(function() {
+	$('#changeValidateCode').click(function() {
+		var $this = $(this);
+		$this.find('img').attr('src', '/Account/GetValidateCode?' + Math.random());
+	})
 	$('#btn-signin').click(function() {
 		var $this = $(this);
 		var data = {
 			email: $('#signinEmail').val(),
 			password: $('#signinPwd').val(),
+			validatecode: $('#signinValidateCode').val(),
 			rememberMe: $('#signinRememberMe').prop('checked')
 		};
 		if (data.email.length == 0) {
@@ -12,6 +17,10 @@ $(document).ready(function() {
 		}
 		if (data.password.length == 0) {
 			$('#signinPwd').inputError('密码不能为空！');
+			return;
+		}
+		if (data.validatecode.length == 0) {
+			$('#signinValidateCode').inputError('验证码不能为空！');
 			return;
 		}
 		$.ajax({
@@ -34,6 +43,9 @@ $(document).ready(function() {
 						case 'password':
 							$('#signinPwd').inputError(json.errorInfo);
 							break;
+						case 'validatecode':
+							$('#signinValidateCode').inputError(json.errorInfo);
+							break;
 					}
 				}
 			},
@@ -51,15 +63,15 @@ $(document).ready(function() {
 			password: $('#signupPwd').val(),
 			passwordAga: $('#signupPwdAgain').val()
 		};
-		if (data.username.length==0) {
+		if (data.username.length == 0) {
 			$('#signupNickName').inputError('用户名不能为空');
 			return;
 		}
-		if (data.email.length==0) {
+		if (data.email.length == 0) {
 			$('#signupEmail').inputError('邮箱不能为空！');
 			return;
 		}
-		if (data.password.length==0) {
+		if (data.password.length == 0) {
 			$('#signupPwd').inputError('密码不能为空！');
 			return;
 		}
@@ -125,11 +137,11 @@ $.fn.extend({
 			content = '错误';
 		}
 		$this.popover({
-			trigger: 'manual',
-			container: 'body',
-			placement: 'top',
-			content: content
-		})
+				trigger: 'manual',
+				container: 'body',
+				placement: 'top',
+				content: content
+			})
 			.popover('show')
 			.parent().parent().addClass('has-error');
 		return $this;

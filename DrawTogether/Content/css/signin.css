@@ -37,6 +37,9 @@ body{
 	padding: 30px 20px 15px 20px;
 	background-color: #fff;
 }
+.form-signin-content .validatecode{
+	padding: 0 5px;
+}
 .form-signin-footer{
 	padding: 20px;
 	border-top: 1px solid #e5e5e5;

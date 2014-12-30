@@ -5,10 +5,10 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using DT.Models;
-using DT.App_Code;
 using System.Web.Security;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
+using System.Diagnostics;
 
 namespace DT.Controllers {
 	public class HomeController : Controller {
@@ -38,5 +38,4 @@ namespace DT.Controllers {
 			return View();
 		}
 	}
-
 }

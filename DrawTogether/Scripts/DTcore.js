@@ -1,6 +1,6 @@
 (function() {
 	//json.type的枚举
-	var ProtJsonType = {
+	var ProtJsonTypeEnum = {
 		MouseUp: 0,
 		MouseDown: 1,
 		MouseMove: 2,
@@ -12,15 +12,51 @@
 		Signout: 8,
 		Error: 9
 	};
+	//鼠标移动时的绘图状态
+	var ProtMouseStatusEnum = {
+		Draw: 0,
+		Erase: 1
+	};
 	//笔触样式
-	var penProperty = {
+	var DrawingStyle = {
 		color: '#000000',
-		thickness: 1,
+		thickness: 2,
+		mouseStatus: ProtMouseStatusEnum.Draw
 	};
 	//坐标类
 	var Point = function(x, y) {
 		this.x = x;
 		this.y = y;
+	};
+
+	var DrawingHandler = {
+		DrawLine: function(ctx, oldPt, oldMidPt, midPt, style) {
+			ctx.beginPath();
+			ctx.lineWidth = style.thickness;
+			ctx.lineCap = 'round';
+			ctx.lineJoin = 'round';
+			ctx.strokeStyle = style.color;
+			ctx.moveTo(midPt.x, midPt.y);
+			ctx.quadraticCurveTo(oldPt.x, oldPt.y, oldMidPt.x, oldMidPt.y);
+			ctx.stroke();
+		},
+		DrawPoint: function(ctx, point, style) {
+			ctx.beginPath();
+			ctx.fillStyle = style.color;
+			ctx.arc(point.x, point.y, style.thickness / 2, 0, Math.PI * 2);
+			ctx.closePath();
+			ctx.fill();
+		},
+		Erase: function(ctx, point, style) {
+			// ctx.save();
+			// ctx.beginPath();
+			// ctx.arc(point.x, point.y, style.thickness + 5, 0, Math.PI * 2);
+			// ctx.clip();
+			// ctx.clearRect(point.x - 50, point.y - 50, 100, 100);
+			// ctx.restore();
+			var t = style.thickness;
+			ctx.clearRect(point.x - t / 2, point.y - t / 2, t, t);
+		}
 	};
 
 	//所有用户管理类
@@ -81,12 +117,18 @@
 		},
 		MouseDownReceived: function(json) {
 			var user = this._findUser(json);
+			var point = json.oldPt;
+			var style = json.drawingStyle;
 			var ctx = user.context;
-			ctx.beginPath();
-			ctx.fillStyle = json.penProperty.color;
-			ctx.arc(json.oldPt.x, json.oldPt.y, json.penProperty.thickness / 2, 0, Math.PI * 2);
-			ctx.closePath();
-			ctx.fill();
+
+			switch (json.drawingStyle.mouseStatus) {
+				case ProtMouseStatusEnum.Draw:
+					DrawingHandler.DrawPoint(ctx, point, style);
+					break;
+				case ProtMouseStatusEnum.Erase:
+					DrawingHandler.Erase(ctx, point, style);
+					break;
+			}
 		},
 		//关于鼠标信息接受时触发
 		MouseMoveReceived: function(json) {
@@ -94,16 +136,17 @@
 			var midPt = json.midPt;
 			var oldPt = json.oldPt;
 			var oldMidPt = json.oldMidPt;
-
+			var style = json.drawingStyle;
 			var ctx = user.context;
-			ctx.beginPath();
-			ctx.lineWidth = json.penProperty.thickness;
-			ctx.lineCap = 'round';
-			ctx.lineJoin = 'round';
-			ctx.strokeStyle = json.penProperty.color;
-			ctx.moveTo(midPt.x, midPt.y);
-			ctx.quadraticCurveTo(oldPt.x, oldPt.y, oldMidPt.x, oldMidPt.y);
-			ctx.stroke();
+
+			switch (json.drawingStyle.mouseStatus) {
+				case ProtMouseStatusEnum.Draw:
+					DrawingHandler.DrawLine(ctx, oldPt, oldMidPt, midPt, style);
+					break;
+				case ProtMouseStatusEnum.Erase:
+					DrawingHandler.Erase(ctx, oldPt, style);
+					break;
+			}
 		},
 		//关于图片二进制接受时触发
 		ImgBinaryReceived: function(json) {
@@ -119,101 +162,143 @@
 			this.User.id = $userInfo.attr('data-userid');
 			this.User.name = $userInfo.text();
 
-			var canvas, ctx;
+			var $canvas, canvas, ctx;
 
-			canvas = this.User.canvas = $('#canvas')[0];
+			$canvas = $('#canvas');
+			canvas = this.User.canvas = $canvas[0];
 			ctx = this.User.context = canvas.getContext('2d');
 			canvas.height = this.canvasHeight;
 			canvas.width = this.canvasWidth;
 
-			$(canvas).on('mousedown', function(event) {
-				handleMouseDown(new Point(event.pageX - $(canvas).offset().left,
-					event.pageY - $(canvas).offset().top));
+			$canvas.on('mousedown', function(event) {
+				var newPoint = new Point(event.pageX - $canvas.offset().left, event.pageY - $canvas.offset().top);
+				handleMouseDown(newPoint);
 			});
+
 			var oldPt, oldMidPt;
 
-			function handleMouseDown(e) {
-				oldPt = new Point(e.x, e.y);
-				oldMidPt = oldPt;
-				ctx.beginPath()
-				ctx.fillStyle = penProperty.color;
-				ctx.arc(e.x, e.y, penProperty.thickness / 2, 0, Math.PI * 2);
-				ctx.closePath();
-				ctx.fill();
-				$(canvas).on('mousemove', function(event) {
-					handleMouseMove(new Point(event.pageX - $(canvas).offset().left,
-						event.pageY - $(canvas).offset().top));
+			function handleMouseDown(point) {
+				oldMidPt = oldPt = point;
+
+				switch (DrawingStyle.mouseStatus) {
+					case ProtMouseStatusEnum.Draw:
+						DrawingHandler.DrawPoint(ctx, point, DrawingStyle);
+						break;
+					case ProtMouseStatusEnum.Erase:
+						DrawingHandler.Erase(ctx, point, DrawingStyle)
+						break;
+				}
+
+				$canvas.on('mousemove', function(event) {
+					var newPoint = new Point(event.pageX - $canvas.offset().left, event.pageY - $canvas.offset().top);
+					switch (DrawingStyle.mouseStatus) {
+						case ProtMouseStatusEnum.Draw:
+							handleMouseMove_Draw(newPoint);
+							break;
+						case ProtMouseStatusEnum.Erase:
+							handleMouseMove_Erase(newPoint);
+							break;
+					}
 				});
 				$(document).one('mouseup', handleMouseUp);
 				$.websocket({
-					type: ProtJsonType.MouseDown,
-					oldPt: oldPt,
-					penProperty: penProperty
+					type: ProtJsonTypeEnum.MouseDown,
+					oldPt: point,
+					drawingStyle: DrawingStyle
 				});
 			}
 
-			function handleMouseMove(e) {
-				var midPt = new Point(oldPt.x + e.x >> 1, oldPt.y + e.y >> 1);
-				ctx.beginPath();
-				ctx.lineWidth = penProperty.thickness;
-				ctx.lineCap = 'round';
-				ctx.lineJoin = 'round';
-				ctx.strokeStyle = penProperty.color;
-				ctx.moveTo(midPt.x, midPt.y);
-				ctx.quadraticCurveTo(oldPt.x, oldPt.y, oldMidPt.x, oldMidPt.y);
-				ctx.stroke();
+			function handleMouseMove_Draw(point) {
+				var midPt = new Point(oldPt.x + point.x >> 1, oldPt.y + point.y >> 1);
+				DrawingHandler.DrawLine(ctx, oldPt, oldMidPt, midPt, DrawingStyle);
 
 				$.websocket({
-					type: ProtJsonType.MouseMove,
+					type: ProtJsonTypeEnum.MouseMove,
 					midPt: midPt,
 					oldPt: oldPt,
 					oldMidPt: oldMidPt,
-					penProperty: penProperty
+					drawingStyle: DrawingStyle
 				});
 
-				oldPt.x = e.x;
-				oldPt.y = e.y;
-				oldMidPt.x = midPt.x;
-				oldMidPt.y = midPt.y;
+				oldPt = point;
+				oldMidPt = midPt;
+			}
+
+			function handleMouseMove_Erase(point) {
+				DrawingHandler.Erase(ctx, point, DrawingStyle);
+
+				$.websocket({
+					type: ProtJsonTypeEnum.MouseMove,
+					oldPt: point,
+					drawingStyle: DrawingStyle
+				});
 			}
 
 			function handleMouseUp(event) {
-				$(canvas).off('mousemove');
+				$canvas.off('mousemove');
 				$.websocket({
-					type: ProtJsonType.MouseUp,
+					type: ProtJsonTypeEnum.MouseUp,
 				});
 			}
 
-			$('#clearShape').click(function(event) {
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
-			});
 			$('#colorPicker').colpick({
 				color: '000000',
 				submitText: '取色',
 				onSubmit: function(hsb, hex, rgb, el) {
 					$(el).find('span').css('background-color', '#' + hex);
 					$(el).colpickHide();
-					penProperty.color = '#' + hex;
+					DrawingStyle.color = '#' + hex;
+				},
+				onShow: function() {
+					var $colpick = $('.colpick');
+					$colpick.css('top', parseInt($colpick.css('top')) - 170 + 'px');
 				}
 			});
 
-			$('.pen-thickness').click(function() {
-				$('.pen-thickness').removeClass('active');
-				$(this).toggleClass('active');
-				penProperty.thickness = $(this).attr('data-property');
+			$('#statusDraw').click(function() {
+				var $this = $(this);
+				if (!$this.hasClass('active')) {
+					$this.addClass('active');
+					DrawingStyle.mouseStatus = ProtMouseStatusEnum.Draw;
+					$('#statusErase').removeClass('active');
+				}
+			});
+			$('#statusErase').click(function() {
+				var $this = $(this);
+				if (!$this.hasClass('active')) {
+					$this.addClass('active');
+					DrawingStyle.mouseStatus = ProtMouseStatusEnum.Erase;
+					$('#statusDraw').removeClass('active');
+				}
+			});
+			$('.btn-thickness').click(function() {
+				DrawingStyle.thickness = $(this).attr('data-thickness');
+				$('.btn-thickness').removeClass('active');
+				$(this).addClass('active');
+			}).find('span').css('height', function() {
+				return $(this).parent().attr('data-thickness') + 'px';
+			});
+
+			$('#clearShape').click(function(event) {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
 			});
 			$('#saveCanvas').click(function() {
 				$.websocket({
-					type: ProtJsonType.ImgBinary,
+					type: ProtJsonTypeEnum.ImgBinary,
 					imgBinary: canvas.toDataURL()
 				});
 			});
-			$('#thicknessPicker').scrollbar({
-				onChange: function(val) {
-					penProperty.thickness = val;
+			$(document).keydown(function(event) {
+				if (event.shiftKey && event.which == 107) {
+					DrawingStyle.thickness++;
+				} else if (event.shiftKey && event.which == 109) {
+					DrawingStyle.thickness--;
+				}
+
+				if (DrawingStyle.thickness <= 0) {
+					DrawingStyle.thickness = 1;
 				}
 			});
-
 		}
 	}
 
@@ -228,30 +313,30 @@
 		var $userList = $('.slide-user-list .list-group');
 		$.websocket('connect', {
 			onMessage: function(json) {
-				console.log(json);
+				// console.log(json);
 				switch (json.type) {
-					case ProtJsonType.Error:
+					case ProtJsonTypeEnum.Error:
 						$.alert({
 							content: json.errorInfo,
 							type: 'danger'
 						});
 						break;
-					case ProtJsonType.MouseDown:
+					case ProtJsonTypeEnum.MouseDown:
 						UserCanvasManager.MouseDownReceived(json);
 						break;
-					case ProtJsonType.MouseMove:
+					case ProtJsonTypeEnum.MouseMove:
 						UserCanvasManager.MouseMoveReceived(json);
 						break;
-					case ProtJsonType.ImgBinary:
+					case ProtJsonTypeEnum.ImgBinary:
 						UserCanvasManager.ImgBinaryReceived(json);
 						break;
-					case ProtJsonType.RequestImgBinary:
+					case ProtJsonTypeEnum.RequestImgBinary:
 						$.websocket({
-							type: ProtJsonType.ImgBinary,
+							type: ProtJsonTypeEnum.ImgBinary,
 							imgBinary: UserCanvasManager.User.canvas.toDataURL()
 						});
 						break;
-					case ProtJsonType.UserList:
+					case ProtJsonTypeEnum.UserList:
 						var userId = $userList.children(':eq(1)').attr('data-userid');
 						$userList.children(':gt(1)').remove();
 						$.each(json.userInfoList, function(index, val) {
@@ -261,7 +346,7 @@
 							}
 						});
 						break;
-					case ProtJsonType.Signin:
+					case ProtJsonTypeEnum.Signin:
 						var $items = $userList.children(':gt(1)');
 						var isInserted = false;
 						$items.each(function(index, el) {
@@ -275,9 +360,9 @@
 						}
 						UserCanvasManager.CreateUserCanvas(json.id, json.name);
 						break;
-					case ProtJsonType.SigninSucceed:
-						$.alert()
-					case ProtJsonType.Signout:
+					case ProtJsonTypeEnum.SigninSucceed:
+						$.alert();
+					case ProtJsonTypeEnum.Signout:
 						var $items = $userList.children(':gt(1)');
 						$items.each(function(index, el) {
 							if (json.id == $(el).attr('data-userid')) {
@@ -292,7 +377,7 @@
 			onOpen: function() {
 				//发送登录信息
 				$.websocket({
-					type: ProtJsonType.Signin,
+					type: ProtJsonTypeEnum.Signin,
 					id: UserCanvasManager.User.id
 				});
 			}
