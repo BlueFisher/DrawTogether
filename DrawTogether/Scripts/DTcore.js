@@ -47,7 +47,16 @@
 			ctx.closePath();
 			ctx.fill();
 		},
-		Erase: function(ctx, point, style) {
+		EraseLine: function(ctx, oldPt, point, style) {
+			var length = Math.sqrt(Math.pow(point.x - oldPt.x, 2) + Math.pow(point.y - oldPt.y, 2));
+			var lenPerX = (point.x - oldPt.x) / length;
+			var lenPerY = (point.y - oldPt.y) / length;
+			var t = style.thickness;
+			for (var i = 0; i <= length; i++) {
+				ctx.clearRect(oldPt.x + lenPerX * i - t / 2, oldPt.y + lenPerY * i - t / 2, t, t);
+			}
+		},
+		ErasePoint: function(ctx, point, style) {
 			// ctx.save();
 			// ctx.beginPath();
 			// ctx.arc(point.x, point.y, style.thickness + 5, 0, Math.PI * 2);
@@ -117,7 +126,7 @@
 		},
 		MouseDownReceived: function(json) {
 			var user = this._findUser(json);
-			var point = json.oldPt;
+			var point = json.point;
 			var style = json.drawingStyle;
 			var ctx = user.context;
 
@@ -126,13 +135,14 @@
 					DrawingHandler.DrawPoint(ctx, point, style);
 					break;
 				case ProtMouseStatusEnum.Erase:
-					DrawingHandler.Erase(ctx, point, style);
+					DrawingHandler.ErasePoint(ctx, point, style);
 					break;
 			}
 		},
 		//关于鼠标信息接受时触发
 		MouseMoveReceived: function(json) {
 			var user = this._findUser(json);
+			var point = json.point;
 			var midPt = json.midPt;
 			var oldPt = json.oldPt;
 			var oldMidPt = json.oldMidPt;
@@ -144,7 +154,7 @@
 					DrawingHandler.DrawLine(ctx, oldPt, oldMidPt, midPt, style);
 					break;
 				case ProtMouseStatusEnum.Erase:
-					DrawingHandler.Erase(ctx, oldPt, style);
+					DrawingHandler.EraseLine(ctx, oldPt, point, style);
 					break;
 			}
 		},
@@ -185,7 +195,7 @@
 						DrawingHandler.DrawPoint(ctx, point, DrawingStyle);
 						break;
 					case ProtMouseStatusEnum.Erase:
-						DrawingHandler.Erase(ctx, point, DrawingStyle)
+						DrawingHandler.ErasePoint(ctx, point, DrawingStyle)
 						break;
 				}
 
@@ -203,7 +213,7 @@
 				$(document).one('mouseup', handleMouseUp);
 				$.websocket({
 					type: ProtJsonTypeEnum.MouseDown,
-					oldPt: point,
+					point: point,
 					drawingStyle: DrawingStyle
 				});
 			}
@@ -225,13 +235,15 @@
 			}
 
 			function handleMouseMove_Erase(point) {
-				DrawingHandler.Erase(ctx, point, DrawingStyle);
-
+				// DrawingHandler.Erase(ctx, point, DrawingStyle);
+				DrawingHandler.EraseLine(ctx, oldPt, point, DrawingStyle);
 				$.websocket({
 					type: ProtJsonTypeEnum.MouseMove,
-					oldPt: point,
+					oldPt: oldPt,
+					point: point,
 					drawingStyle: DrawingStyle
 				});
+				oldPt = point;
 			}
 
 			function handleMouseUp(event) {

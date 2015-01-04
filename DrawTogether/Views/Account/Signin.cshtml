@@ -4,109 +4,116 @@
 
 <!doctype html>
 <html lang="zh-cn">
-<head>
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-	<meta charset="UTF-8">
-	<title>Draw Together</title>
-	<script type="text/javascript" src="~/Scripts/jQuery/jquery-2.1.1.min.js"></script>
-	<script type="text/javascript" src="~/Scripts/jQuery/bootstrap.min.js"></script>
-	<script type="text/javascript" src="~/Scripts/jQuery/jquery.alert.js"></script>
-	<script type="text/javascript" src="~/Scripts/signin.js"></script>
-	<link rel="stylesheet" href="~/Content/css/bootstrap.min.css">
-	<link rel="stylesheet" href="~/Content/css/bootstrap-theme.min.css">
-	<link rel="stylesheet" href="~/Content/css/font-awesome.min.css">
-	<link rel="stylesheet" href="~/Content/css/global.css">
-	<link rel="stylesheet" href="~/Content/css/signin.css">
-	<link rel="stylesheet" href="~/content/css/tools/animate.min.css">
-</head>
-<body>
-	<div class="container-fluid">
-		<div class="logo text-center">
-			<img src="~/Content/image/DTlogo.png" alt="logo">
-		</div>
-		
-		<div class="form-signin center-block" id="signin">
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<meta charset="UTF-8">
+		<title>Draw Together</title>
+		<!--[if lt IE 9]>
+			<script>
+				window.location = "/Home/Bsie"
+			</script>
+		<![endif]-->
+		<script type="text/javascript" src="~/Scripts/jQuery/jquery-2.1.1.min.js"></script>
+		<script type="text/javascript" src="~/Scripts/jQuery/bootstrap.min.js"></script>
+		<script type="text/javascript" src="~/Scripts/jQuery/jquery.alert.js"></script>
+		<script type="text/javascript" src="~/Scripts/signin.js"></script>
 
-			<div class="form-signin-header">
-				<h2>登录</h2>
+		<link rel="stylesheet" href="~/content/css/bootstrap/bootstrap.min.css">
+		<link rel="stylesheet" href="~/content/css/bootstrap/bootstrap-theme.min.css">
+		<link rel="stylesheet" href="~/Content/css/font-awesome.min.css">
+		<link rel="stylesheet" href="~/Content/css/global.css">
+		<link rel="stylesheet" href="~/Content/css/signin.css">
+		<link rel="stylesheet" href="~/content/css/tools/animate.min.css">
+	</head>
+	<body>
+		<div class="container-fluid">
+			<div class="logo text-center">
+				<img src="~/Content/image/DTlogo.png" alt="logo">
 			</div>
-			<div class="form-signin-content">
-				<form>
-					<div class="form-group">
-						<div class="input-group">
-							<div class="input-group-addon"><span class="fa fa-envelope fa-fw"></span></div>
-							<input class="form-control" id="signinEmail" name="email" type="email" placeholder="输入邮箱">
-						</div>
-					</div>
-					<div class="form-group">
-						<div class="input-group">
-							<div class="input-group-addon"><span class="fa fa-key fa-fw"></span></div>
-							<input class="form-control" id="signinPwd" name="password" type="password" placeholder="输入密码">
-						</div>
-					</div>
-					<div class="form-group">
-						<div class="input-group">
-							<div class="input-group-addon"><span class="fa fa-pencil fa-fw"></span></div>
-							<input class="form-control" id="signinValidateCode" name="validatecode" type="text" placeholder="输入验证码">
-							<div class="input-group-addon validatecode">
-								<a href="javascript:;" id="changeValidateCode"><img src="/Account/GetValidateCode" height="22" alt="验证码"></a>
+			
+			<div class="form-signin center-block" id="signin">
+
+				<div class="form-signin-header">
+					<h2>登录</h2>
+				</div>
+				<div class="form-signin-content">
+					<form>
+						<div class="form-group">
+							<div class="input-group">
+								<div class="input-group-addon"><span class="fa fa-envelope fa-fw"></span></div>
+								<input class="form-control" id="signinEmail" name="email" type="email" placeholder="输入邮箱">
 							</div>
 						</div>
-					</div>
-					<div class="checkbox">
-						<label>
-							<input id="signinRememberMe" type="checkbox">记住我
-						</label>
-					</div>	
-				</form>
+						<div class="form-group">
+							<div class="input-group">
+								<div class="input-group-addon"><span class="fa fa-key fa-fw"></span></div>
+								<input class="form-control" id="signinPwd" name="password" type="password" placeholder="输入密码">
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="input-group">
+								<div class="input-group-addon"><span class="fa fa-pencil fa-fw"></span></div>
+								<input class="form-control" id="signinValidateCode" name="validatecode" type="text" placeholder="输入验证码">
+								<div class="input-group-addon validatecode">
+									<a href="javascript:;" id="changeValidateCode"><img src="/Account/GetValidateCode" height="22" alt="验证码"></a>
+								</div>
+							</div>
+						</div>
+						<div class="checkbox">
+							<label>
+								<input id="signinRememberMe" type="checkbox">记住我
+							</label>
+						</div>	
+					</form>
+				</div>
+				<div class="form-signin-footer">
+					<button class="btn btn-primary btn-lg btn-block" id="btn-signin">登录</button>
+					<button class="btn btn-default btn-block btn-toggle">注册</button>
+				</div>
 			</div>
-			<div class="form-signin-footer">
-				<button class="btn btn-primary btn-lg btn-block" id="btn-signin">登录</button>
-				<button class="btn btn-default btn-block btn-toggle">注册</button>
+
+			<div class="form-signin center-block invisible" id="signup">
+				<div class="form-signin-header">
+					<h2>注册</h2>
+				</div>
+				<div class="form-signin-content">
+					<form>
+						<div class="form-group">
+							<div class="input-group">
+								<div class="input-group-addon"><span class="fa fa-user fa-fw"></span></div>
+								<input class="form-control" id="signupNickName" name="username" type="text" placeholder="输入昵称">
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="input-group">
+								<div class="input-group-addon"><span class="fa fa-envelope fa-fw"></span></div>
+								<input class="form-control" id="signupEmail" name="email" type="email" placeholder="输入邮箱">
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="input-group">
+								<div class="input-group-addon"><span class="fa fa-key fa-fw"></span></div>
+								<input class="form-control" id="signupPwd" name="password" type="password" placeholder="输入密码">
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="input-group">
+								<div class="input-group-addon"><span class="fa fa-key fa-fw"></span></div>
+								<input class="form-control" id="signupPwdAgain" name="password" type="password" placeholder="再次输入密码">
+							</div>
+						</div>	
+					</form>
+				</div>
+				<div class="form-signin-footer">
+					<button class="btn btn-primary btn-lg btn-block" id="btn-signup">注册</button>
+					<button class="btn btn-default btn-block btn-toggle">返回登录</button>
+				</div>
 			</div>
+			
+		</div>
+		<div class="footer">
+			Copyright © 2014 <a href="https://github.com/BlueFisher/" target="_blank">Fisher Chang</a>
 		</div>
 
-		<div class="form-signin center-block invisible" id="signup">
-			<div class="form-signin-header">
-				<h2>注册</h2>
-			</div>
-			<div class="form-signin-content">
-				<form>
-					<div class="form-group">
-						<div class="input-group">
-							<div class="input-group-addon"><span class="fa fa-user fa-fw"></span></div>
-							<input class="form-control" id="signupNickName" name="username" type="text" placeholder="输入昵称">
-						</div>
-					</div>
-					<div class="form-group">
-						<div class="input-group">
-							<div class="input-group-addon"><span class="fa fa-envelope fa-fw"></span></div>
-							<input class="form-control" id="signupEmail" name="email" type="email" placeholder="输入邮箱">
-						</div>
-					</div>
-					<div class="form-group">
-						<div class="input-group">
-							<div class="input-group-addon"><span class="fa fa-key fa-fw"></span></div>
-							<input class="form-control" id="signupPwd" name="password" type="password" placeholder="输入密码">
-						</div>
-					</div>
-					<div class="form-group">
-						<div class="input-group">
-							<div class="input-group-addon"><span class="fa fa-key fa-fw"></span></div>
-							<input class="form-control" id="signupPwdAgain" name="password" type="password" placeholder="再次输入密码">
-						</div>
-					</div>	
-				</form>
-			</div>
-			<div class="form-signin-footer">
-				<button class="btn btn-primary btn-lg btn-block" id="btn-signup">注册</button>
-				<button class="btn btn-default btn-block btn-toggle">返回登录</button>
-			</div>
-		</div>
-		
-	</div>
-	<div class="footer">
-		Copyright © 2014 <a href="https://github.com/BlueFisher/" target="_blank">Fisher Chang</a>
-	</div>
-</body>
+	</body>
 </html>

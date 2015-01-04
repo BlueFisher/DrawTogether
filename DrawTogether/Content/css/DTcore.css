@@ -58,6 +58,9 @@ ul.toolbar-group li{
 	margin-right: 10px;
 	height: 34px;
 }
+ul.toolbar-group li:last-child{
+	margin-right: 0px;
+}
 #colorPicker{
 	display: block;
 	padding: 3px;

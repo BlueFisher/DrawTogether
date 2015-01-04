@@ -117,6 +117,12 @@ $(document).ready(function() {
 	$('.btn-toggle').click(function() {
 		$('.form-signin').toggleClass('invisible');
 	});
+	$('#signin').enterpress(function(){
+		$('#btn-signin').click();
+	});
+	$('#signup').enterpress(function(){
+		$('#btn-signup').click();
+	});
 }).ajaxError(function(event, xhr, settings, thrownError) {
 	$.alert({
 		title: '连接服务器错误！',
@@ -124,6 +130,9 @@ $(document).ready(function() {
 		style: 'danger'
 	})
 });
+
+
+
 
 $.fn.extend({
 	inputError: function(content) {
@@ -145,5 +154,13 @@ $.fn.extend({
 			.popover('show')
 			.parent().parent().addClass('has-error');
 		return $this;
+	},
+	enterpress: function(fun) {
+		$(this).keypress(function(event) {
+			if (event.keyCode == 13) {
+				fun();
+			}
+		});
+		return $(this);
 	}
 });

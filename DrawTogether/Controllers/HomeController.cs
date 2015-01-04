@@ -37,5 +37,9 @@ namespace DT.Controllers {
 			ViewBag.UserId = user.Id;
 			return View();
 		}
+
+		public ActionResult Bsie() {
+			return View();
+		}
 	}
 }

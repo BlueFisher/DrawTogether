@@ -36,13 +36,13 @@ namespace DT.Models {
 	public class ProtMouseDown : ProtBase {
 		public ProtMouseDown()
 			: base(ProtJsonType.MouseDown) { }
-		public object oldPt { get; set; }
-		public object oldMidPt { get; set; }
+		public object point { get; set; }
 		public object drawingStyle { get; set; }
 	}
 	public class ProtMouseMove : ProtBase {
 		public ProtMouseMove()
 			: base(ProtJsonType.MouseMove) { }
+		public object point { get; set; }
 		public object midPt { get; set; }
 		public object oldPt { get; set; }
 		public object oldMidPt { get; set; }

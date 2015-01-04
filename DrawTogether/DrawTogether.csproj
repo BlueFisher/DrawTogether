@@ -135,18 +135,26 @@
       <DependentUpon>DrawTogetherDB.mdf</DependentUpon>
     </Content>
     <Content Include="App_Doc\Protocal.txt" />
-    <Content Include="Content\css\animate.min.css" />
-    <Content Include="Content\css\bootstrap-theme.min.css" />
-    <Content Include="Content\css\bootstrap.min.css" />
+    <Content Include="Content\css\bootstrap\bootstrap-ie6.min.css" />
+    <Content Include="Content\css\bootstrap\bootstrap-theme.min.css" />
+    <Content Include="Content\css\bootstrap\bootstrap.min.css" />
+    <Content Include="Content\css\bootstrap\ie.css" />
     <Content Include="Content\css\DTcore.css" />
     <Content Include="Content\css\font-awesome.min.css" />
     <Content Include="Content\css\global.css" />
     <Content Include="Content\css\signin.css" />
+    <Content Include="Content\css\tools\animate.min.css" />
     <Content Include="Content\css\tools\colpick.css" />
     <Content Include="Content\fonts\fontawesome-webfont.svg" />
     <Content Include="Content\image\background.jpg" />
+    <Content Include="Content\image\bsie\b1.png" />
+    <Content Include="Content\image\bsie\b2.png" />
+    <Content Include="Content\image\bsie\b3.png" />
+    <Content Include="Content\image\bsie\b4.png" />
+    <Content Include="Content\image\bsie\b5.png" />
     <Content Include="Content\image\DTlogo.png" />
     <Content Include="Content\image\Logo.png" />
+    <Content Include="Scripts\bootstrap-ie.js" />
     <Content Include="Scripts\DTcore.js" />
     <Content Include="Scripts\jQuery\colpick.js" />
     <Content Include="Scripts\jQuery\jquery.alert.js" />
@@ -157,6 +165,7 @@
     <Content Include="Scripts\jQuery\scrollbar.js" />
     <Content Include="Scripts\signin.js" />
     <Content Include="Global.asax" />
+    <None Include="Views\Home\Bsie.cshtml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
